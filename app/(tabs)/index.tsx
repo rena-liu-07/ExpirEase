@@ -91,7 +91,12 @@ export default function Index() {
           <View key={group.label} style={styles.ingredientsSection}>
             <View style={{ flexDirection: "row", gap: 10 }}>
               <Text style={styles.ingredientsSectionTitle}>{group.label}</Text>
-              <View style={styles.arrowCircle}>
+              <View
+                style={[
+                  groups.length > 2 ? { display: "flex" } : { display: "none" }, // not working ?
+                  styles.arrowCircle,
+                ]}
+              >
                 <MaterialIcons
                   name="arrow-forward-ios"
                   size={13}
@@ -192,6 +197,7 @@ const styles = StyleSheet.create({
 
   swiperContainer: {
     // gap: 10,
+    height: 70,
   },
 
   ingredientsCard: {
