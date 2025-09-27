@@ -1,15 +1,12 @@
 import Feather from "@expo/vector-icons/Feather";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useRouter } from "expo-router";
-import { ScrollView, StyleSheet, TextInput, View } from "react-native";
+import { StyleSheet, TextInput, View } from "react-native";
 import { Button, Card, Text } from "react-native-paper";
 import Swiper from "react-native-swiper";
 // import "swiper/css";
 
-export default function Index() {
-  const router = useRouter();
+export default function IndexSearchedScreen() {
   return (
-    <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.searchContainer}>
         <Feather
           name="search"
@@ -25,20 +22,13 @@ export default function Index() {
       </View>
       <View style={styles.headingSection}>
         <Text style={styles.heading}>Expiring Soon</Text>
-        <Button
-          mode="text"
-          style={{ marginRight: 18 }}
-          onPress={() => router.push("/index-see-all")}
-        >
+        <Button mode="text" style={{ marginRight: 18 }}>
           See All
         </Button>
       </View>
       <View style={styles.ingredientsSection}>
         <View style={{ flexDirection: "row", gap: 10 }}>
           <Text style={styles.ingredientsSectionTitle}>Expiring [Today]</Text>
-          <View style={styles.arrowCircle}>
-            <MaterialIcons name="arrow-forward-ios" size={13} color="black" />
-          </View>
         </View>
         <Swiper
           style={styles.swiperContainer}
@@ -65,7 +55,7 @@ export default function Index() {
           </Card>
         </Swiper>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -76,13 +66,13 @@ const styles = StyleSheet.create({
   },
 
   searchContainer: {
-    margin: 18,
-    marginBottom: 24,
-    paddingLeft: 8,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#e7e7e7",
     borderRadius: 8,
+    // margin: 18,
+    marginBottom: 24,
+    paddingLeft: 8,
   },
 
   searchIcon: {
