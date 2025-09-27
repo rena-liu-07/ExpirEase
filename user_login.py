@@ -12,6 +12,7 @@ def get_connection():
 # 初始化 user 表
 conn = get_connection()
 cursor = conn.cursor()
+
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS user (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
