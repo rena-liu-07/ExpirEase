@@ -58,7 +58,12 @@ def analyze_image(image_path):
 
 if __name__ == '__main__':
     import sys
-    image_paths = sys.argv[1:] if len(sys.argv) > 1 else ['pictures/sample.jpg']
+    image_paths = sys.argv[1:]
+
+    if not image_paths:
+        print("No image paths provided.")
+        sys.exit(1)
+
     all_items = []
     for image_path in image_paths:
         print(f"Processing: {image_path}")

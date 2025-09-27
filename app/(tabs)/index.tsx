@@ -2,6 +2,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { StyleSheet, TextInput, View } from "react-native";
 import { Button, Card, Text } from "react-native-paper";
 import Swiper from "react-native-swiper";
+import PhotoUploader from "../../PhotoUploader";
 // import "swiper/css";
 
 export default function Index() {
