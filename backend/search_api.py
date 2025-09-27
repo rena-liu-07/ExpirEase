@@ -4,6 +4,8 @@ import sqlite3
 from datetime import datetime, timedelta
 import os
 
+import photo_scanner
+
 app = Flask(__name__)
 CORS(app)
 
@@ -54,6 +56,13 @@ def all_ingredients():
             "expiration": expire_date.strftime("%Y-%m-%d")
         })
     return jsonify(result)
+
+@app.route('/photo_scanner', methods=['POST'])
+def photo_scanner_endpoint():
+    image_paths = request.json.get('paths', [])
+    # photo_scanner.run should return a list of items for each image
+    results = photo_scanner.run(image_paths)
+    return jsonify({'results': results})
 
 if __name__ == "__main__":
     app.run(debug=True)

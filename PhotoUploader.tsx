@@ -65,8 +65,6 @@ export default function PhotoUploader() {
     if (!result.canceled && result.assets?.length) {
       setPhotos([...photos, ...result.assets.map(asset => asset.uri)]);
     }
-
-    sendToFlask();
   };
 
   // Function to remove a photo from the state
@@ -75,7 +73,7 @@ export default function PhotoUploader() {
   };
 
   const sendToFlask = async () => {
-  await fetch('http://10.36.184.181:8080/photo_scanner', {
+  await fetch('http://localhost:5000', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ paths: photos }),

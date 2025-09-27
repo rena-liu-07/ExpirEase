@@ -9,7 +9,7 @@ app = Flask(__name__)
 def photo_scanner_endpoint():
     image_paths = request.json.get('paths', [])
     # photo_scanner.run should return a list of items for each image
-    results = photo_scanner.run(image_paths)
+    results = photo_scanner(image_paths)
     return jsonify({'results': results})
 
 @app.route('/recipe_maker', methods=['POST'])
@@ -21,4 +21,4 @@ def recipe_maker_endpoint():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=5000)
