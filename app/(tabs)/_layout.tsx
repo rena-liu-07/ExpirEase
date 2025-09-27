@@ -51,7 +51,7 @@ export default function TabsLayout() {
             );
           },
         }}
-      ></Tabs.Screen>
+      />
       <Tabs.Screen
         name="photo-uploader"
         options={{
@@ -65,7 +65,7 @@ export default function TabsLayout() {
             );
           },
         }}
-      ></Tabs.Screen>
+      />
       <Tabs.Screen
         name="searched"
         options={{
