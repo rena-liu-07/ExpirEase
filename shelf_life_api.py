@@ -1,7 +1,7 @@
-# shelf_life_api.py
 import requests
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
+import re
 
 def get_expiry_from_stilltasty(food_name):
     """
@@ -34,45 +34,30 @@ def get_expiry_from_stilltasty(food_name):
         print(f"Error fetching from StillTasty: {e}")
         return None
 
+def parse_days_from_text(text):
+    """
+    Extracts the average number of days from a string like '3-5 days' or '7 days'.
+    Returns the average days as an integer, or None if not found.
+    """
+    match = re.search(r'(\d+)(?:-(\d+))?\s+days?', text)
+    if match:
+        min_days = int(match.group(1))
+        max_days = int(match.group(2)) if match.group(2) else min_days
+        avg_days = (min_days + max_days) // 2
+        return avg_days
+    return None
+
 def estimate_expiration(item):
+    """
+    Estimates the expiration date for any food using StillTasty.
+    Returns a date string (YYYY-MM-DD) if possible, otherwise a descriptive string or None.
+    """
     today = datetime.today()
-    item = item.lower()
-
-    try:
-        url = f"https://world.openfoodfacts.org/cgi/search.pl"
-        params = {
-            "search_terms": item,
-            "search_simple": 1,
-            "action": "process",
-            "json": 1,
-            "page_size": 1
-        }
-        resp = requests.get(url, params=params)
-        data = resp.json()
-
-        if data.get("products"):
-            product = data["products"][0]
-            categories = product.get("categories", "").lower()
-
-            if "banana" in categories or "grape" in categories:
-                return (today + timedelta(days=5)).strftime('%Y-%m-%d')
-            elif "candy" in categories or "chocolate" in categories:
-                return (today + timedelta(days=30)).strftime('%Y-%m-%d')
-            elif "apple" in categories or "pear" in categories:
-                return (today + timedelta(days=21)).strftime('%Y-%m-%d')
-            else:
-                # Try StillTasty for more info
-                stilltasty_info = get_expiry_from_stilltasty(item)
-                if stilltasty_info:
-                    return stilltasty_info
-                return (today + timedelta(days=7)).strftime('%Y-%m-%d')
-        else:
-            # Try StillTasty if OpenFoodFacts has no product
-            stilltasty_info = get_expiry_from_stilltasty(item)
-            if stilltasty_info:
-                return stilltasty_info
-    except Exception as e:
-        print("Error using external API:", e)
-
-    # Fallback default
+    stilltasty_info = get_expiry_from_stilltasty(item)
+    if stilltasty_info:
+        days = parse_days_from_text(stilltasty_info)
+        if days:
+            return (today + timedelta(days=days)).strftime('%Y-%m-%d')
+        return stilltasty_info  # fallback to text if parsing fails
+    # Fallback default if nothing found
     return (today + timedelta(days=7)).strftime('%Y-%m-%d')
