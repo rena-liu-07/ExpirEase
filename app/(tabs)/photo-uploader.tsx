@@ -1,5 +1,5 @@
-import PhotoUploader from '../../PhotoUploader';
+// import PhotoUploader from '../../PhotoUploader';
 
 export default function PhotoUploaderScreen() {
-  return <PhotoUploader />;
+  // return <PhotoUploader />;
 }

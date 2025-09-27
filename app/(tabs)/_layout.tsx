@@ -23,7 +23,7 @@ export default function TabsLayout() {
             );
           },
         }}
-      ></Tabs.Screen>
+      />
       <Tabs.Screen
         name="new-ingredient"
         options={{
@@ -37,7 +37,7 @@ export default function TabsLayout() {
             );
           },
         }}
-      ></Tabs.Screen>
+      />
       <Tabs.Screen
         name="sustainability-report"
         options={{
@@ -51,7 +51,7 @@ export default function TabsLayout() {
             );
           },
         }}
-      ></Tabs.Screen>
+      />
       <Tabs.Screen
         name="photo-uploader"
         options={{
@@ -65,7 +65,15 @@ export default function TabsLayout() {
             );
           },
         }}
-      ></Tabs.Screen>
+      />
+      <Tabs.Screen
+        name="searched"
+        options={{
+          href: null,
+          headerShown: false,
+          tabBarShowLabel: false,
+        }}
+      />
     </Tabs>
   );
 }

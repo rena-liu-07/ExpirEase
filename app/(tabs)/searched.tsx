@@ -1,29 +1,43 @@
 import Feather from "@expo/vector-icons/Feather";
-import { useState } from "react";
+import { useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, TextInput, View } from "react-native";
 import { Text } from "react-native-paper";
 
 export default function IndexSearchedScreen() {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState<string>("");
+  const { query } = useLocalSearchParams();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSearch = async () => {
-    if (!search.trim()) return;
+  useEffect(() => {
+    if (typeof query === "string") {
+      setSearch(query);
+      handleSearch(query);
+    }
+  }, [query]);
+
+  const handleSearch = async (query?: string) => {
+    const searchTerm = query ?? search;
+    if (!searchTerm.trim()) return;
     setLoading(true);
     setError("");
     setItem(null);
     try {
       const res = await fetch(
-        `http://localhost:5000/search?q=${encodeURIComponent(search)}`
+        `http://localhost:5000/search?q=${encodeURIComponent(searchTerm)}`
       );
       if (!res.ok) {
         setError("No ingredient found.");
         setItem(null);
       } else {
-        const data = await res.json();
-        setItem(data);
+        try {
+          const data = await res.json();
+          setItem(data);
+        } catch {
+          setItem(searchTerm);
+        }
       }
     } catch (e) {
       setError("Network error.");
@@ -47,7 +61,10 @@ export default function IndexSearchedScreen() {
           value={search}
           onChangeText={setSearch}
           returnKeyType="search"
-          onSubmitEditing={handleSearch}
+          onSubmitEditing={() => {
+            handleSearch();
+            setSearch("");
+          }}
         />
       </View>
       <View style={styles.headingSection}>
@@ -112,7 +129,9 @@ const styles = StyleSheet.create({
     color: "#b00020",
   },
   error: {
-    color: "red",
+    color: "#686666",
+    fontSize: 20,
     marginTop: 10,
+    textAlign: "center",
   },
 });

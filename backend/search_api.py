@@ -57,6 +57,18 @@ def all_ingredients():
         })
     return jsonify(result)
 
+@app.route("/delete-ingredient", methods=["DELETE"])
+def delete_ingredient():
+    name = request.args.get("name")
+    if not name:
+        return jsonify({"error": "No name provided"}), 400
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM food WHERE name = ?", (name,))
+    conn.commit()
+    conn.close()
+    return jsonify({"success": True})
+
 @app.route('/photo_scanner', methods=['POST'])
 def photo_scanner_endpoint():
     image_paths = request.json.get('paths', [])
