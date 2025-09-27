@@ -57,8 +57,13 @@ def analyze_image(image_path):
 
 
 if __name__ == '__main__':
-    image_path = 'pictures/sample.jpg'  # Replace with your image file
-    items = analyze_image(image_path)
-    for entry in items:
-        print(f"Item: {entry['item']}")
-        print(f"Expiration: {entry['expiration']}")
+    import sys
+    image_paths = sys.argv[1:] if len(sys.argv) > 1 else ['pictures/sample.jpg']
+    all_items = []
+    for image_path in image_paths:
+        print(f"Processing: {image_path}")
+        items = analyze_image(image_path)
+        for entry in items:
+            print(f"Item: {entry['item']}")
+            print(f"Expiration: {entry['expiration']}")
+        all_items.extend(items)
