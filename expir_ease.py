@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from PIL import Image
 import google.generativeai as genai
 from datetime import datetime, timedelta
+from shelf_life_api import estimate_expiration, get_expiry_from_stilltasty
 
 # Load environment variables from .env file
 load_dotenv()
@@ -40,8 +41,11 @@ def analyze_image(image_path):
     # Estimate expiration for items missing it
     for entry in items:
         if not entry['expiration'] and entry['item']:
-            print(f"No labeled expiration found for {entry['item']}, estimating.")
-            entry['expiration'] = estimate_expiration(entry['item'])
+            #print(f"No labeled expiration found for {entry['item']}, estimating.")
+            #entry['expiration'] = estimate_expiration(entry['item'])
+
+            expiry_info = estimate_expiration(current_item)
+            print(f"Estimated expiry for {current_item}: {expiry_info}")
     return items
 
 def estimate_expiration(item):
