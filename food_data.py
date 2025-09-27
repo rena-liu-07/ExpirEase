@@ -44,6 +44,6 @@ def check_food_status():
         date_added_dt = datetime.strptime(date_added, "%Y-%m-%d")
         expire_date = date_added_dt + timedelta(days=expire_days)
         days_left = (expire_date - today).days
-        status = "expired" if days_left < 0 else f"good, {days_left} days left"
+        status = "expired" if days_left < 0 else f" {days_left} days left"
         result.append([name, status])
     return result

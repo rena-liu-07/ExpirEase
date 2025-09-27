@@ -51,7 +51,21 @@ export default function TabsLayout() {
             );
           },
         }}
-      />
+      ></Tabs.Screen>
+      <Tabs.Screen
+        name="photo-uploader"
+        options={{
+          headerShown: false,
+          tabBarShowLabel: false,
+          tabBarIcon: ({ focused }) => {
+            return focused ? (
+              <Ionicons name="cloud-upload" size={24} color="black" />
+            ) : (
+              <Ionicons name="cloud-upload-outline" size={24} color="black" />
+            );
+          },
+        }}
+      ></Tabs.Screen>
       <Tabs.Screen
         name="searched"
         options={{
