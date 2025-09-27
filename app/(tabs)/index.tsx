@@ -1,13 +1,56 @@
 import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Button, Card, Text } from "react-native-paper";
 import Swiper from "react-native-swiper";
-// import "swiper/css";
+
+const EXPIRY_GROUPS = [
+  { label: "Expiring Today", test: (days: number) => days === 0 },
+  { label: "Expiring Tomorrow", test: (days: number) => days === 1 },
+  { label: "Expiring In 2 Days", test: (days: number) => days === 2 },
+  { label: "Expiring In 3 Days", test: (days: number) => days === 3 },
+  {
+    label: "Expiring In <1 Week",
+    test: (days: number) => days > 3 && days < 7,
+  },
+  {
+    label: "Expiring In <1 Month",
+    test: (days: number) => days >= 7 && days < 30,
+  },
+];
+
+function groupIngredients(ingredients) {
+  const today = new Date();
+  const used = new Set();
+  const groups = EXPIRY_GROUPS.map((g) => ({ ...g, items: [] }));
+
+  for (const ing of ingredients) {
+    const exp = new Date(ing.expiration);
+    const days = Math.floor((exp - today) / (1000 * 60 * 60 * 24));
+    for (const group of groups) {
+      if (group.test(days) && !used.has(ing.name)) {
+        group.items.push(ing);
+        used.add(ing.name);
+        break;
+      }
+    }
+  }
+  return groups.filter((g) => g.items.length > 0);
+}
 
 export default function Index() {
   const router = useRouter();
+  const [search, setSearch] = useState("");
+  const [groups, setGroups] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/all-ingredients")
+      .then((res) => res.json())
+      .then((data) => setGroups(groupIngredients(data)));
+  }, []);
+
   return (
     <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
       <View style={styles.searchContainer}>
@@ -21,6 +64,13 @@ export default function Index() {
           placeholder="Search"
           underlineColorAndroid="transparent"
           style={styles.searchInput}
+          value={search}
+          onChangeText={setSearch}
+          returnKeyType="search"
+          onSubmitEditing={() => {
+            router.push("/searched");
+            setSearch("");
+          }}
         />
       </View>
       <View style={styles.headingSection}>
@@ -33,7 +83,36 @@ export default function Index() {
           See All
         </Button>
       </View>
-      <View style={styles.ingredientsSection}>
+      {groups.map((group) => (
+        <View key={group.label} style={styles.ingredientsSection}>
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <Text style={styles.ingredientsSectionTitle}>{group.label}</Text>
+            <View style={styles.arrowCircle}>
+              <MaterialIcons name="arrow-forward-ios" size={13} color="black" />
+            </View>
+          </View>
+          <Swiper
+            style={styles.swiperContainer}
+            showsButtons={false}
+            showsPagination={false}
+            loop={false}
+          >
+            {group.items.map((item) => (
+              <Card
+                key={item.name}
+                elevation={0}
+                style={styles.ingredientsCard}
+              >
+                <Card.Content style={styles.cardTextContainer}>
+                  <Text style={styles.cardCategory}>{item.category}</Text>
+                  <Text style={styles.cardIngredient}>{item.name}</Text>
+                </Card.Content>
+              </Card>
+            ))}
+          </Swiper>
+        </View>
+      ))}
+      {/* <View style={styles.ingredientsSection}>
         <View style={{ flexDirection: "row", gap: 10 }}>
           <Text style={styles.ingredientsSectionTitle}>Expiring [Today]</Text>
           <View style={styles.arrowCircle}>
@@ -43,6 +122,7 @@ export default function Index() {
         <Swiper
           style={styles.swiperContainer}
           showsButtons={false}
+          showsPagination={false}
           loop={false}
         >
           <Card elevation={0} style={styles.ingredientsCard}>
@@ -64,7 +144,7 @@ export default function Index() {
             </Card.Content>
           </Card>
         </Swiper>
-      </View>
+      </View> */}
     </ScrollView>
   );
 }

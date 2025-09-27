@@ -1,9 +1,15 @@
-import { Dimensions, FlatList, StyleSheet, View } from "react-native";
+import {
+  Dimensions,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import { Card, Text } from "react-native-paper";
 
 export default function IndexSeeAllScreen() {
   return (
-    <View style={styles.container}>
+    <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
       <View style={styles.ingredientsSection}>
         <View style={{ flexDirection: "row", gap: 16 }}>
           <Text style={styles.ingredientsSectionTitle}>Expiring [Today]</Text>
@@ -19,7 +25,7 @@ export default function IndexSeeAllScreen() {
           />
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
