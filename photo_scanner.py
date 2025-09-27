@@ -15,8 +15,17 @@ model = genai.GenerativeModel('gemini-2.5-flash')
 def analyze_image(image_path):
     # Open image and convert to bytes
     im = Image.open(image_path)
+    today_str = datetime.today().strftime('%Y-%m-%d')
     # Send prompt and image to Gemini for analysis
-    prompt = {"text": "Identify all food items in the image and, if present, extract the labeled expiration date for each. If no label is present, estimate the expiration date for fruits or non-labeled items based on today's date. For each item, respond in the format: Item: <item>\nExpiration: <date>. List each item on a new line."}
+    prompt = {
+        "text": (
+            f"Today's date is {today_str}. "
+            "Identify all food items in the image and, if present, extract the labeled expiration date for each. "
+            "If no label is present, estimate the expiration date for fruits or non-labeled items based on today's date. "
+            "For each item, respond in the format: Item: <item>\nExpiration: <date>. List each item on a new line. "
+            "Each container can be counted as one item. When estimating, use today's date as the reference."
+        )
+    }
     response = model.generate_content(contents=[prompt, im])
     items = []
     # Parse Gemini response
