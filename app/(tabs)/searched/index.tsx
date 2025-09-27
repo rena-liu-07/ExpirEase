@@ -5,7 +5,7 @@ import { Text } from "react-native-paper";
 
 export default function IndexSearchedScreen() {
   const [search, setSearch] = useState("");
-  const [result, setResult] = useState(null);
+  const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -13,17 +13,17 @@ export default function IndexSearchedScreen() {
     if (!search.trim()) return;
     setLoading(true);
     setError("");
-    setResult(null);
+    setItem(null);
     try {
       const res = await fetch(
         `http://localhost:5000/search?q=${encodeURIComponent(search)}`
       );
       if (!res.ok) {
         setError("No ingredient found.");
-        setResult(null);
+        setItem(null);
       } else {
         const data = await res.json();
-        setResult(data);
+        setItem(data);
       }
     } catch (e) {
       setError("Network error.");
@@ -53,12 +53,12 @@ export default function IndexSearchedScreen() {
       <View style={styles.headingSection}>
         {loading && <ActivityIndicator />}
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        {result && (
+        {item && (
           <>
-            <Text style={styles.heading}>{result.name}</Text>
-            <Text style={styles.subheading}>{result.category}</Text>
+            <Text style={styles.heading}>{item.name}</Text>
+            <Text style={styles.subheading}>{item.category}</Text>
             <Text style={styles.expirationDate}>
-              Expiration: {result.expiration}
+              Expiration: {item.expiration}
             </Text>
           </>
         )}

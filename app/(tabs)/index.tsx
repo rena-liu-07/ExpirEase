@@ -112,39 +112,6 @@ export default function Index() {
           </Swiper>
         </View>
       ))}
-      {/* <View style={styles.ingredientsSection}>
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          <Text style={styles.ingredientsSectionTitle}>Expiring [Today]</Text>
-          <View style={styles.arrowCircle}>
-            <MaterialIcons name="arrow-forward-ios" size={13} color="black" />
-          </View>
-        </View>
-        <Swiper
-          style={styles.swiperContainer}
-          showsButtons={false}
-          showsPagination={false}
-          loop={false}
-        >
-          <Card elevation={0} style={styles.ingredientsCard}>
-            <Card.Content style={styles.cardTextContainer}>
-              <Text style={styles.cardCategory}>[Category]</Text>
-              <Text style={styles.cardIngredient}>[Ingredient]</Text>
-            </Card.Content>
-          </Card>
-          <Card elevation={0} style={styles.ingredientsCard}>
-            <Card.Content style={styles.cardTextContainer}>
-              <Text style={styles.cardCategory}>[Category]</Text>
-              <Text style={styles.cardIngredient}>[Ingredient]</Text>
-            </Card.Content>
-          </Card>
-          <Card elevation={0} style={styles.ingredientsCard}>
-            <Card.Content style={styles.cardTextContainer}>
-              <Text style={styles.cardCategory}>[Category]</Text>
-              <Text style={styles.cardIngredient}>[Ingredient]</Text>
-            </Card.Content>
-          </Card>
-        </Swiper>
-      </View> */}
     </ScrollView>
   );
 }
