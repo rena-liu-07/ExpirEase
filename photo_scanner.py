@@ -148,12 +148,15 @@ def analyze_image(image_path):
 
 if __name__ == '__main__':
     import sys
-    image_paths = sys.argv[1:] if len(sys.argv) > 1 else ["pictures/cookie_test.jpg"]
-    all_items = []
-    for image_path in image_paths:
-        print(f"Processing: {image_path}")
-        items = analyze_image(image_path)
-        all_items.extend(items)
+    if len(sys.argv) >= 1:
+        image_paths = sys.argv[1:] 
+        all_items = []
+        for image_path in image_paths:
+            print(f"Processing: {image_path}")
+            items = analyze_image(image_path)
+            all_items.extend(items)
+    else:
+        print("No images provided.")
     
     status_list = check_food_status()
     print("\nFood Status:")
