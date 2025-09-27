@@ -1,3 +1,4 @@
+import Feather from "@expo/vector-icons/Feather";
 import { useEffect, useState } from "react";
 import {
   Dimensions,
@@ -6,6 +7,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
 import { Card, Text } from "react-native-paper";
 
 const EXPIRY_GROUPS = [
@@ -42,6 +44,18 @@ function groupIngredients(ingredients) {
   return groups.filter((g) => g.items.length > 0);
 }
 
+const [ingredients, setIngredients] = useState([]);
+
+const handleDelete = async (name) => {
+  await fetch(
+    `http://YOUR_IP:5000/delete-ingredient?name=${encodeURIComponent(name)}`,
+    {
+      method: "DELETE",
+    }
+  );
+  setIngredients((prev) => prev.filter((item) => item.name !== name));
+};
+
 export default function IndexSeeAllScreen() {
   const [groups, setGroups] = useState([]);
 
@@ -75,12 +89,28 @@ export default function IndexSeeAllScreen() {
 }
 
 const renderItem = ({ item }) => (
-  <Card style={styles.ingredientsCard} elevation={0}>
-    <Card.Content style={styles.cardTextContainer}>
-      <Text style={styles.cardCategory}>{item.category}</Text>
-      <Text style={styles.cardIngredient}>{item.name}</Text>
-    </Card.Content>
-  </Card>
+  <Swipeable
+    renderRightActions={() => (
+      <View
+        style={{
+          justifyContent: "center",
+          alignItems: "center",
+          width: 80,
+          backgroundColor: "red",
+        }}
+      >
+        <Feather name="trash-2" size={24} color="white" />
+      </View>
+    )}
+    onSwipeableOpen={() => handleDelete(item.name)}
+  >
+    <Card style={styles.ingredientsCard} elevation={0}>
+      <Card.Content style={styles.cardTextContainer}>
+        <Text style={styles.cardCategory}>{item.category}</Text>
+        <Text style={styles.cardIngredient}>{item.name}</Text>
+      </Card.Content>
+    </Card>
+  </Swipeable>
 );
 
 const { width } = Dimensions.get("window");

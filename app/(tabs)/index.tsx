@@ -52,7 +52,7 @@ export default function Index() {
   }, []);
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.searchContainer}>
         <Feather
           name="search"
@@ -68,51 +68,60 @@ export default function Index() {
           onChangeText={setSearch}
           returnKeyType="search"
           onSubmitEditing={() => {
-            router.push("/searched");
+            router.push({
+              pathname: "/(tabs)/searched",
+              params: { query: search },
+            });
             setSearch("");
           }}
         />
       </View>
-      <View style={styles.headingSection}>
-        <Text style={styles.heading}>Expiring Soon</Text>
-        <Button
-          mode="text"
-          style={{ marginRight: 18 }}
-          onPress={() => router.push("/index-see-all")}
-        >
-          See All
-        </Button>
-      </View>
-      {groups.map((group) => (
-        <View key={group.label} style={styles.ingredientsSection}>
-          <View style={{ flexDirection: "row", gap: 10 }}>
-            <Text style={styles.ingredientsSectionTitle}>{group.label}</Text>
-            <View style={styles.arrowCircle}>
-              <MaterialIcons name="arrow-forward-ios" size={13} color="black" />
-            </View>
-          </View>
-          <Swiper
-            style={styles.swiperContainer}
-            showsButtons={false}
-            showsPagination={false}
-            loop={false}
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.headingSection}>
+          <Text style={styles.heading}>Expiring Soon</Text>
+          <Button
+            mode="text"
+            style={{ marginRight: 18 }}
+            onPress={() => router.push("/index-see-all")}
           >
-            {group.items.map((item) => (
-              <Card
-                key={item.name}
-                elevation={0}
-                style={styles.ingredientsCard}
-              >
-                <Card.Content style={styles.cardTextContainer}>
-                  <Text style={styles.cardCategory}>{item.category}</Text>
-                  <Text style={styles.cardIngredient}>{item.name}</Text>
-                </Card.Content>
-              </Card>
-            ))}
-          </Swiper>
+            See All
+          </Button>
         </View>
-      ))}
-    </ScrollView>
+        {groups.map((group) => (
+          <View key={group.label} style={styles.ingredientsSection}>
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <Text style={styles.ingredientsSectionTitle}>{group.label}</Text>
+              <View style={styles.arrowCircle}>
+                <MaterialIcons
+                  name="arrow-forward-ios"
+                  size={13}
+                  color="black"
+                />
+              </View>
+            </View>
+            <Swiper
+              style={styles.swiperContainer}
+              showsButtons={false}
+              showsPagination={false}
+              loop={false}
+            >
+              {group.items.map((item) => (
+                <Card
+                  key={item.name}
+                  elevation={0}
+                  style={styles.ingredientsCard}
+                >
+                  <Card.Content style={styles.cardTextContainer}>
+                    <Text style={styles.cardCategory}>{item.category}</Text>
+                    <Text style={styles.cardIngredient}>{item.name}</Text>
+                  </Card.Content>
+                </Card>
+              ))}
+            </Swiper>
+          </View>
+        ))}
+      </ScrollView>
+    </View>
   );
 }
 
