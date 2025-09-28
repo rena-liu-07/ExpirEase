@@ -5,7 +5,6 @@ app = Flask(__name__)
 
 DB_NAME = "users.db"
 
-# 初始化数据库
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -22,9 +21,18 @@ def init_db():
 
 init_db()
 
-# 注册
-@app.route("/signup", methods=["POST"])
+
+@app.route("/", methods=["GET"])
+def home():
+    return "✅ Flask is running! Try /signup or /login"
+
+
+
+@app.route("/signup", methods=["GET", "POST"])
 def signup():
+    if request.method == "GET":
+        return "This is the signup page. Please send POST request with username, email, password."
+
     data = request.get_json()
     username = data.get("username")
     email = data.get("email")
@@ -48,9 +56,12 @@ def signup():
         return jsonify({"error": "Username or email already exists"}), 400
 
 
-# 登录
-@app.route("/login", methods=["POST"])
+
+@app.route("/login", methods=["GET", "POST"])
 def login():
+    if request.method == "GET":
+        return "This is the login page. Please send POST request with username, password."
+
     data = request.get_json()
     username = data.get("username")
     password = data.get("password")
@@ -70,11 +81,15 @@ def login():
         return jsonify({"error": "Invalid username or password"}), 401
 
 
-# 登出（前端其实只需要清空本地状态，这里做个空接口）
-@app.route("/logout", methods=["POST"])
+
+@app.route("/logout", methods=["GET", "POST"])
 def logout():
+    if request.method == "GET":
+        return "This is the logout page. Just send POST to logout."
+
     return jsonify({"message": "Logged out"}), 200
 
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
+
