@@ -1,11 +1,11 @@
 import Feather from "@expo/vector-icons/Feather";
 import { useEffect, useState } from "react";
 import {
-  Dimensions,
-  FlatList,
-  ScrollView,
-  StyleSheet,
-  View,
+    Dimensions,
+    FlatList,
+    ScrollView,
+    StyleSheet,
+    View,
 } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { Card, Text } from "react-native-paper";
@@ -25,14 +25,14 @@ const EXPIRY_GROUPS = [
   },
 ];
 
-function groupIngredients(ingredients) {
+function groupIngredients(ingredients: any[]) {
   const today = new Date();
   const used = new Set();
-  const groups = EXPIRY_GROUPS.map((g) => ({ ...g, items: [] }));
+  const groups = EXPIRY_GROUPS.map((g) => ({ ...g, items: [] as any[] }));
 
   for (const ing of ingredients) {
     const exp = new Date(ing.expiration);
-    const days = Math.floor((exp - today) / (1000 * 60 * 60 * 24));
+    const days = Math.floor((exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     for (const group of groups) {
       if (group.test(days) && !used.has(ing.name)) {
         group.items.push(ing);
@@ -44,9 +44,9 @@ function groupIngredients(ingredients) {
   return groups.filter((g) => g.items.length > 0);
 }
 
-const [ingredients, setIngredients] = useState([]);
+const [ingredients, setIngredients] = useState<any[]>([]);
 
-const handleDelete = async (name) => {
+const handleDelete = async (name: string) => {
   await fetch(
     `http://YOUR_IP:5000/delete-ingredient?name=${encodeURIComponent(name)}`,
     {
@@ -57,12 +57,12 @@ const handleDelete = async (name) => {
 };
 
 export default function IndexSeeAllScreen() {
-  const [groups, setGroups] = useState([]);
+  const [groups, setGroups] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/all-ingredients")
+    fetch("http://localhost:8080/all-ingredients")
       .then((res) => res.json())
-      .then((data) => setGroups(groupIngredients(data)));
+      .then((data) => setGroups(groupIngredients(data as any[])));
   }, []);
 
   return (
@@ -88,7 +88,7 @@ export default function IndexSeeAllScreen() {
   );
 }
 
-const renderItem = ({ item }) => (
+const renderItem = ({ item }: { item: any }) => (
   <Swipeable
     renderRightActions={() => (
       <View

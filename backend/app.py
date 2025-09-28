@@ -150,6 +150,67 @@ def delete_ingredient():
 
 
 # ========================
+# 🍳 RECIPE ROUTES
+# ========================
+
+@app.route("/generate-recipe", methods=["POST"])
+def generate_recipe():
+    """Generate a recipe using available ingredients from the database."""
+    try:
+        # Import here to avoid circular imports
+        import sys
+        import os
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+        import recipe_maker
+        
+        data = request.get_json() or {}
+        user_id = data.get('user_id')
+        recipe_size = data.get('recipe_size', 'medium')
+        dietary_restrictions = data.get('dietary_restrictions', '')
+        cuisine_preference = data.get('cuisine_preference', '')
+        prioritize_expiring = data.get('prioritize_expiring', True)
+        
+        if user_id:
+            recipe = recipe_maker.make_recipe_for_user(
+                user_id, recipe_size, dietary_restrictions, cuisine_preference, prioritize_expiring
+            )
+        else:
+            recipe = recipe_maker.make_recipe_from_general_inventory(
+                recipe_size, dietary_restrictions, cuisine_preference, prioritize_expiring
+            )
+        
+        return jsonify({'recipe': recipe, 'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e), 'success': False}), 500
+
+@app.route("/expiring-ingredients", methods=["GET"])
+def expiring_ingredients():
+    """Get ingredients that are expiring soon."""
+    try:
+        import sys
+        import os
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+        import recipe_maker
+        
+        user_id = request.args.get('user_id', type=int)
+        days_threshold = request.args.get('days_threshold', default=3, type=int)
+        
+        expiring_foods = recipe_maker.get_expiring_foods(user_id, days_threshold)
+        
+        result = []
+        for name, days_left, extra_info in expiring_foods:
+            result.append({
+                'name': name,
+                'days_until_expiry': days_left,
+                'category_or_nutrition': extra_info
+            })
+        
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}, 500)
+
+
+# ========================
 # 🚀 Run the unified server
 # ========================
 

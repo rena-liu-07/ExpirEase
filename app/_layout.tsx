@@ -1,64 +1,42 @@
-// import { Stack } from "expo-router";
-
-import { AuthProvider, useAuth } from "@/lib/auth-context";
-import { TransitionPresets } from "@react-navigation/stack";
-import { Stack, useRouter, useSegments } from "expo-router";
-import { useEffect, useState } from "react";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Stack } from "expo-router";
 import { PaperProvider } from "react-native-paper";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 
-function RouteGuard({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const { user, isLoadingUser } = useAuth();
-  const [mounted, setMounted] = useState(false);
-  const segments = useSegments();
+// import { AuthProvider, useAuth } from "@/lib/auth-context";
+// import { TransitionPresets } from "@react-navigation/stack";
+// import { Stack, useRouter, useSegments } from "expo-router";
+// import { useEffect, useState } from "react";
+// import { GestureHandlerRootView } from "react-native-gesture-handler";
+// import { SafeAreaProvider } from "react-native-safe-area-context";
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+// function RouteGuard({ children }: { children: React.ReactNode }) {
+//   const router = useRouter();
+//   const { user, isLoadingUser } = useAuth();
+//   const [mounted, setMounted] = useState(false);
+//   const segments = useSegments();
 
-  useEffect(() => {
-    const inAuthGroup = segments[0] === "auth";
+//   useEffect(() => {
+//     setMounted(true);
+//   }, []);
 
-    if (mounted && !user && !inAuthGroup && !isLoadingUser) {
-      router.replace("/auth");
-    } else if (user && inAuthGroup && !isLoadingUser) {
-      router.replace("/(tabs)");
-    }
-  }, [mounted, user, segments]);
+//   useEffect(() => {
+//     const inAuthGroup = segments[0] === "auth";
 
-  return <>{children}</>;
-}
+//     if (mounted && !user && !inAuthGroup && !isLoadingUser) {
+//       router.replace("/auth");
+//     } else if (user && inAuthGroup && !isLoadingUser) {
+//       router.replace("/(tabs)");
+//     }
+//   }, [mounted, user, segments]);
+
+//   return <>{children}</>;
+// }
 
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <AuthProvider>
-        <PaperProvider>
-          <SafeAreaProvider>
-            <RouteGuard>
-              <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen
-                  name="index-see-all"
-                  options={{
-                    ...TransitionPresets.SlideFromRightIOS,
-                    gestureEnabled: true,
-                  }}
-                />
-                <Stack.Screen
-                  name="saved-recipes-all"
-                  options={{
-                    ...TransitionPresets.SlideFromRightIOS,
-                    gestureEnabled: true,
-                  }}
-                />
-              </Stack>
-            </RouteGuard>
-          </SafeAreaProvider>
-        </PaperProvider>
-      </AuthProvider>
-    </GestureHandlerRootView>
+    <PaperProvider>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+    </PaperProvider>
   );
 }

@@ -107,6 +107,8 @@ def init_common_categories():
             print("\n--- All Ingredients in Database ---")
             for name, category, date_added, expire_days in rows:
                 print(f"Name: {name}, Category: {category}, Date Added: {date_added}, Expire Days: {expire_days}")
+
+def init_common_categories():
     common_categories = [
         "Fruit",
         "Vegetable",
@@ -125,6 +127,14 @@ def init_common_categories():
     ]
     for cat in common_categories:
         add_category(cat)
+
+def delete_food(name):
+    """Delete a food item by name"""
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM food WHERE name=?", (name,))
+    conn.commit()
+    conn.close()
 
 # ====== RUN ONCE ======
 if __name__ == "__main__":

@@ -3,11 +3,12 @@ import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, TextInput, View } from "react-native";
 import { Text } from "react-native-paper";
+import { API_ENDPOINTS, apiCall } from "../../config/api";
 
 export default function IndexSearchedScreen() {
   const [search, setSearch] = useState<string>("");
   const { query } = useLocalSearchParams();
-  const [item, setItem] = useState(null);
+  const [item, setItem] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -25,22 +26,13 @@ export default function IndexSearchedScreen() {
     setError("");
     setItem(null);
     try {
-      const res = await fetch(
-        `http://localhost:5000/search?q=${encodeURIComponent(searchTerm)}`
+      const data = await apiCall(
+        `${API_ENDPOINTS.SEARCH}?q=${encodeURIComponent(searchTerm)}`
       );
-      if (!res.ok) {
-        setError("No ingredient found.");
-        setItem(null);
-      } else {
-        try {
-          const data = await res.json();
-          setItem(data);
-        } catch {
-          setItem(searchTerm);
-        }
-      }
+      setItem(data);
     } catch (e) {
-      setError("Network error.");
+      setError("No ingredient found or network error.");
+      setItem(null);
     }
     setLoading(false);
   };

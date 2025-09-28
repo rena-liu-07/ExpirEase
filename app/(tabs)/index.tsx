@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Button, Card, Text } from "react-native-paper";
 import Swiper from "react-native-swiper";
+import { API_ENDPOINTS, apiCall } from "../../config/api";
 
 const EXPIRY_GROUPS = [
   { label: "Expiring Today", test: (days: number) => days === 0 },
@@ -21,14 +22,14 @@ const EXPIRY_GROUPS = [
   },
 ];
 
-function groupIngredients(ingredients) {
+function groupIngredients(ingredients: any[]) {
   const today = new Date();
   const used = new Set();
-  const groups = EXPIRY_GROUPS.map((g) => ({ ...g, items: [] }));
+  const groups = EXPIRY_GROUPS.map((g) => ({ ...g, items: [] as any[] }));
 
   for (const ing of ingredients) {
     const exp = new Date(ing.expiration);
-    const days = Math.floor((exp - today) / (1000 * 60 * 60 * 24));
+    const days = Math.floor((exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     for (const group of groups) {
       if (group.test(days) && !used.has(ing.name)) {
         group.items.push(ing);
@@ -43,12 +44,12 @@ function groupIngredients(ingredients) {
 export default function Index() {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [groups, setGroups] = useState([]);
+  const [groups, setGroups] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/all-ingredients")
-      .then((res) => res.json())
-      .then((data) => setGroups(groupIngredients(data)));
+    apiCall(API_ENDPOINTS.ALL_INGREDIENTS)
+      .then((data) => setGroups(groupIngredients(data as any[])))
+      .catch((error) => console.error("Failed to load ingredients:", error));
   }, []);
 
   return (
@@ -110,7 +111,7 @@ export default function Index() {
               showsPagination={false}
               loop={false}
             >
-              {group.items.map((item) => (
+              {group.items.map((item: any) => (
                 <Card
                   key={item.name}
                   elevation={0}

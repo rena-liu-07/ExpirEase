@@ -17,13 +17,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // 🚀 Signup with Flask API
   const signup = async (username: string, email: string, password: string) => {
     try {
-      const res = await fetch("http://localhost:5000/signup", {
+      const res = await fetch("http://localhost:8080/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password }),
       });
 
-      const data = await res.json();
+      const data = await res.json() as any;
 
       if (res.ok) {
         setUser({ id: data.user_id, username });
@@ -38,13 +38,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // 🚀 Login with Flask API
   const login = async (username: string, password: string) => {
     try {
-      const res = await fetch("http://localhost:5000/login", {
+      const res = await fetch("http://localhost:8080/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await res.json();
+      const data = await res.json() as any;
 
       if (res.ok) {
         setUser({ id: data.user_id, username });
@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // 🚀 Logout (clear state + call backend if needed)
   const logout = () => {
-    fetch("http://localhost:5000/logout", { method: "POST" }).catch(() => {});
+    fetch("http://localhost:8080/logout", { method: "POST" }).catch(() => {});
     setUser(null);
   };
 
