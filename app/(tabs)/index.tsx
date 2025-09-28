@@ -104,7 +104,7 @@ export default function Index() {
                 <MaterialIcons
                   name="arrow-forward-ios"
                   size={13}
-                  color="black"
+                  color="#eb5757"
                 />
               </View>
             </View>
@@ -186,10 +186,12 @@ const styles = StyleSheet.create({
   arrowCircle: {
     height: 20,
     width: 20,
-    backgroundColor: "#e7e7e7",
+    // backgroundColor: "#e7e7e7",
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#eb5757",
   },
 
   ingredientsSectionTitle: {
@@ -209,9 +211,11 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     marginRight: 16,
     borderRadius: 8,
-    backgroundColor: "#f7f2fa",
+    backgroundColor: "transparent",
     height: 61,
     width: 164,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
   },
 
   cardTextContainer: {

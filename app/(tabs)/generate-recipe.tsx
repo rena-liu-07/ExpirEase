@@ -371,6 +371,7 @@ ${baseIngredients
         <Dialog
           visible={showOptionsDialog}
           onDismiss={() => setShowOptionsDialog(false)}
+          accent-color={"#fcfcfa"}
         >
           <Dialog.Title>Recipe Options</Dialog.Title>
           <Dialog.Content>
@@ -427,7 +428,6 @@ ${baseIngredients
                     setPrioritizeExpiring(value === "true")
                   }
                   value={prioritizeExpiring.toString()}
-                  accent-color={"#fcfcfa"}
                 >
                   <View style={styles.radioRow}>
                     <RadioButton value="true" color={"#eb5757"} />
@@ -475,15 +475,16 @@ ${baseIngredients
             </ScrollView>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={() => setShowFullscreenRecipe(false)}>
+            <Button
+              accent-color={"#eb5757"}
+              onPress={() => setShowFullscreenRecipe(false)}
+            >
               Close
             </Button>
             <Button
               mode="contained"
-              onPress={() => {
-                // Here you could implement saving to favorites
-                Alert.alert("Success", "Recipe saved to favorites!");
-              }}
+              accent-color={"#eb5757"}
+              onPress={() => {}}
             >
               Save Recipe
             </Button>
