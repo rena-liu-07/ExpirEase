@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#686666",
+    borderColor: "#e0e0e0",
     // Remove alignSelf: "stretch" and make width fit content
   },
   selectButtonText: {

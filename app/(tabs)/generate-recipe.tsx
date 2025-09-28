@@ -228,49 +228,6 @@ export default function GenerateRecipeScreen() {
           </Button>
         </View>
 
-        {/* Quick Actions */}
-        <View style={styles.quickActionsContainer}>
-          <Text style={styles.quickActionsTitle}>Quick Options</Text>
-          <View style={styles.quickButtonsRow}>
-            <Button
-              mode="outlined"
-              compact
-              onPress={() => {
-                setCuisinePreference("Italian");
-                generateRecipe();
-              }}
-              style={styles.quickButton}
-              labelStyle={{ color: "#1a1a1a" }}
-            >
-              Italian
-            </Button>
-            <Button
-              mode="outlined"
-              compact
-              onPress={() => {
-                setCuisinePreference("Asian");
-                generateRecipe();
-              }}
-              style={styles.quickButton}
-              labelStyle={{ color: "#1a1a1a" }}
-            >
-              Asian
-            </Button>
-            <Button
-              mode="outlined"
-              compact
-              onPress={() => {
-                setDietaryRestrictions("vegetarian");
-                generateRecipe();
-              }}
-              style={styles.quickButton}
-              labelStyle={{ color: "#1a1a1a" }}
-            >
-              Vegetarian
-            </Button>
-          </View>
-        </View>
-
         {/* Generated Recipes */}
         {recipes.length > 0 && (
           <View style={styles.recipesContainer}>
@@ -283,6 +240,7 @@ export default function GenerateRecipeScreen() {
                   setSelectedRecipe(recipe);
                   setShowFullscreenRecipe(true);
                 }}
+                elevation={0}
               >
                 <Card.Content>
                   <View style={styles.recipeCardHeader}>
@@ -350,17 +308,18 @@ export default function GenerateRecipeScreen() {
               <RadioButton.Group
                 onValueChange={setRecipeSize}
                 value={recipeSize}
+                accent-color={"#fcfcfa"}
               >
                 <View style={styles.radioRow}>
-                  <RadioButton value="small" />
+                  <RadioButton value="small" color={"#eb5757"} />
                   <Text style={styles.radioLabel}>Small (1-2 servings)</Text>
                 </View>
                 <View style={styles.radioRow}>
-                  <RadioButton value="medium" />
+                  <RadioButton value="medium" color={"#eb5757"} />
                   <Text style={styles.radioLabel}>Medium (3-4 servings)</Text>
                 </View>
                 <View style={styles.radioRow}>
-                  <RadioButton value="large" />
+                  <RadioButton value="large" color={"#eb5757"} />
                   <Text style={styles.radioLabel}>Large (5-6 servings)</Text>
                 </View>
               </RadioButton.Group>
@@ -396,15 +355,16 @@ export default function GenerateRecipeScreen() {
                     setPrioritizeExpiring(value === "true")
                   }
                   value={prioritizeExpiring.toString()}
+                  accent-color={"#fcfcfa"}
                 >
                   <View style={styles.radioRow}>
-                    <RadioButton value="true" />
+                    <RadioButton value="true" color={"#eb5757"} />
                     <Text style={styles.radioLabel}>
                       Prioritize expiring ingredients
                     </Text>
                   </View>
                   <View style={styles.radioRow}>
-                    <RadioButton value="false" />
+                    <RadioButton value="false" color={"#eb5757"} />
                     <Text style={styles.radioLabel}>
                       Use any available ingredients
                     </Text>
@@ -414,8 +374,15 @@ export default function GenerateRecipeScreen() {
             </ScrollView>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={resetOptions}>Reset</Button>
-            <Button onPress={() => setShowOptionsDialog(false)}>Done</Button>
+            <Button onPress={resetOptions} accent-color={"#eb5757"}>
+              Reset
+            </Button>
+            <Button
+              onPress={() => setShowOptionsDialog(false)}
+              accent-color={"#eb5757"}
+            >
+              Done
+            </Button>
           </Dialog.Actions>
         </Dialog>
 
@@ -544,28 +511,13 @@ const styles: any = StyleSheet.create({
     gap: 10,
   },
   optionsButton: {
-    borderColor: "#1a1a1a",
+    borderColor: "#e0e0e0",
     color: "#eb5757",
+    backgroundColor: "transparent",
   },
   generateButton: {
     backgroundColor: "#eb5757",
-  },
-  quickActionsContainer: {
-    padding: 10,
-  },
-  quickActionsTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  quickButtonsRow: {
-    flexDirection: "row",
-    gap: 8,
-    flexWrap: "wrap",
-  },
-  quickButton: {
-    flex: 1,
-    minWidth: 80,
+    marginTop: 8,
   },
   dialogSectionTitle: {
     fontSize: 16,
@@ -581,6 +533,8 @@ const styles: any = StyleSheet.create({
   radioLabel: {
     fontSize: 14,
     marginLeft: 8,
+    borderRadius: 8,
+    color: "#1a1a1a",
   },
   textInput: {
     marginBottom: 10,
@@ -613,10 +567,9 @@ const styles: any = StyleSheet.create({
   },
   recipeCard: {
     marginBottom: 15,
-    elevation: 0,
     backgroundColor: "#fcfcfa",
     borderWidth: 1,
-    borderColor: "#1a1a1a",
+    borderColor: "#e0e0e0",
   },
   recipeCardHeader: {
     flexDirection: "row",
