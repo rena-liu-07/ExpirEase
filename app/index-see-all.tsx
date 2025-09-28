@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { Card, Text } from "react-native-paper";
-import { API_ENDPOINTS } from "../config/api";
+import { API_ENDPOINTS, apiCall } from "../config/api";
 
 const EXPIRY_GROUPS = [
   { label: "Expiring Today", test: (days: number) => days === 0 },
@@ -30,13 +30,21 @@ const EXPIRY_GROUPS = [
 ];
 
 function groupIngredients(ingredients: any[]) {
+  // Safety check to ensure ingredients is an array
+  if (!Array.isArray(ingredients)) {
+    console.warn("groupIngredients: ingredients is not an array:", ingredients);
+    return [];
+  }
+
   const today = new Date();
   const used = new Set();
   const groups = EXPIRY_GROUPS.map((g) => ({ ...g, items: [] as any[] }));
 
   for (const ing of ingredients) {
     const exp = new Date(ing.expiration);
-    const days = Math.floor((exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const days = Math.floor(
+      (exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    );
     for (const group of groups) {
       if (group.test(days) && !used.has(ing.name)) {
         group.items.push(ing);
@@ -54,13 +62,19 @@ export default function IndexSeeAllScreen() {
   const [ingredients, setIngredients] = useState<any[]>([]);
 
   const handleDelete = async (name: string) => {
-    await fetch(
-      `${API_ENDPOINTS.DELETE_INGREDIENT}?name=${encodeURIComponent(name)}`,
-      {
-        method: "DELETE",
-      }
-    );
-    setIngredients((prev) => prev.filter((item) => item.name !== name));
+    try {
+      await apiCall(
+        `${API_ENDPOINTS.DELETE_INGREDIENT}?name=${encodeURIComponent(name)}`,
+        {
+          method: "DELETE",
+        }
+      );
+      setIngredients((prev: any[]) =>
+        prev.filter((item: any) => item.name !== name)
+      );
+    } catch (error) {
+      console.error("Failed to delete ingredient:", error);
+    }
   };
 
   const renderItem = ({ item }: { item: any }) => (
@@ -89,13 +103,25 @@ export default function IndexSeeAllScreen() {
   );
 
   useEffect(() => {
-    fetch(API_ENDPOINTS.ALL_INGREDIENTS)
-      .then((res) => res.json())
-      .then((data) => setGroups(groupIngredients(data as any[])));
+    const loadIngredients = async () => {
+      try {
+        const data = await apiCall(API_ENDPOINTS.ALL_INGREDIENTS);
+        // Ensure data is an array before processing
+        const ingredientsArray = Array.isArray(data) ? data : [];
+        setIngredients(ingredientsArray);
+        setGroups(groupIngredients(ingredientsArray));
+      } catch (error) {
+        console.error("Failed to load ingredients:", error);
+        setIngredients([]);
+        setGroups([]);
+      }
+    };
+
+    loadIngredients();
   }, []);
 
   return (
-    <View>
+    <View style={{ backgroundColor: "#fcfcfa" }}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.replace("/(tabs)")}
@@ -143,9 +169,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 24,
-    padding: 16,
+    paddingLeft: 16,
+    paddingRight: 16,
     paddingTop: 8,
+    backgroundColor: "transparent",
   },
   iconButton: {
     padding: 8,
@@ -184,10 +211,11 @@ const styles = StyleSheet.create({
 
   ingredientsSectionTitle: {
     margin: 18,
+    marginTop: 8,
     marginBottom: 0,
     fontSize: 16,
     fontWeight: 600,
-    color: "#1a1a1a",
+    color: "#eb5757",
   },
 
   ingredientsSectionLayout: {
@@ -196,10 +224,17 @@ const styles = StyleSheet.create({
 
   ingredientsCard: {
     borderRadius: 8,
-    backgroundColor: "#f7f2fa",
-    height: 61,
+    height: 72,
     width: CARD_WIDTH,
     marginBottom: 0,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    elevation: 3,
+    shadowColor: "#686666",
+    shadowOpacity: 0.5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 3,
   },
 
   cardTextContainer: {

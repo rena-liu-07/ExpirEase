@@ -38,15 +38,13 @@ export default function AuthScreen() {
         setError(error);
         return;
       }
-      // Successful signup, navigate to main app
-      router.replace("/(tabs)");
     } else {
       const error = await login(username, password);
       if (error) {
         setError(error);
         return;
       }
-      // Successful login, navigate to main app
+
       router.replace("/(tabs)");
     }
   };
@@ -61,8 +59,9 @@ export default function AuthScreen() {
     >
       {" "}
       <View style={styles.content}>
-        <Text style={styles.title} variant="headlineMedium">
-          {isSignUp ? "Create Account" : "Welcome Back"}
+        <Text style={styles.expirease}>ExpirEase</Text>
+        <Text style={styles.title}>
+          {isSignUp ? "Create an account" : "Welcome back"}
         </Text>
 
         <TextInput
@@ -116,11 +115,41 @@ export default function AuthScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f5f5f5" },
-  content: { flex: 1, padding: 16, justifyContent: "center" },
-  title: { textAlign: "center", marginBottom: 24 },
-  input: { marginBottom: 16 },
-  button: { marginTop: 8 },
-  switchModeButton: { marginTop: 16 },
-  error: { color: "red", marginTop: 10 },
+  container: {
+    flex: 1,
+    backgroundColor: "#fcfcfa",
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+    justifyContent: "center",
+  },
+  expirease: {
+    textAlign: "center",
+    fontSize: 38,
+    marginBottom: 60,
+    fontWeight: 700,
+  },
+  title: {
+    textAlign: "center",
+    marginBottom: 24,
+    fontSize: 18,
+    fontWeight: 600,
+    color: "#686666",
+  },
+  input: {
+    marginBottom: 16,
+  },
+  button: {
+    marginTop: 8,
+    backgroundColor: "#1a1a1a",
+  },
+  switchModeButton: {
+    marginTop: 16,
+    color: "#686666",
+  },
+  error: {
+    color: "red",
+    marginTop: 10,
+  },
 });

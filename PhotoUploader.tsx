@@ -37,7 +37,7 @@ export default function PhotoUploader() {
     if (!hasPermission) return;
 
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaType.Image, // Only allow images
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Only allow images
       quality: 1, // Highest quality
     });
 
@@ -55,7 +55,7 @@ export default function PhotoUploader() {
     if (!hasPermission) return;
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaType.Image, // Only allow images
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Only allow images
       allowsMultipleSelection: true, // Enable selecting multiple images
       selectionLimit: 10, // Limit to 10 images
       quality: 1, // Highest quality

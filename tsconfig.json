@@ -1,11 +1,24 @@
 {
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
     "jsx": "react-native",
     "lib": [
-      "esnext"
+      "dom",
+      "dom.iterable", 
+      "es2022"
     ],
+    "target": "es2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "noImplicitAny": false,
+    "noImplicitReturns": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "paths": {
       "@/*": [
         "./*"
@@ -17,6 +30,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ],
-  "extends": "expo/tsconfig.base"
+  ]
 }

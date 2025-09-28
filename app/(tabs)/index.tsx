@@ -1,11 +1,10 @@
 import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Button, Card, Text } from "react-native-paper";
 import Swiper from "react-native-swiper";
-import { API_ENDPOINTS, apiCall } from "../../config/api";
 
 const EXPIRY_GROUPS = [
   { label: "Expiring Today", test: (days: number) => days === 0 },
@@ -29,7 +28,9 @@ function groupIngredients(ingredients: any[]) {
 
   for (const ing of ingredients) {
     const exp = new Date(ing.expiration);
-    const days = Math.floor((exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const days = Math.floor(
+      (exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    );
     for (const group of groups) {
       if (group.test(days) && !used.has(ing.name)) {
         group.items.push(ing);
@@ -45,12 +46,6 @@ export default function Index() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [groups, setGroups] = useState<any[]>([]);
-
-  useEffect(() => {
-    apiCall(API_ENDPOINTS.ALL_INGREDIENTS)
-      .then((data) => setGroups(groupIngredients(data as any[])))
-      .catch((error) => console.error("Failed to load ingredients:", error));
-  }, []);
 
   return (
     <View style={styles.container}>
@@ -84,6 +79,7 @@ export default function Index() {
             mode="text"
             style={{ marginRight: 18 }}
             onPress={() => router.push("/index-see-all")}
+            labelStyle={{ color: "#eb5757" }}
           >
             See All
           </Button>
@@ -101,10 +97,11 @@ export default function Index() {
                 <MaterialIcons
                   name="arrow-forward-ios"
                   size={13}
-                  color="black"
+                  color="#1a1a1a"
                 />
               </View>
             </View>
+
             <Swiper
               style={styles.swiperContainer}
               showsButtons={false}
@@ -170,6 +167,7 @@ const styles = StyleSheet.create({
   heading: {
     margin: 18,
     marginTop: 8,
+    marginBottom: 4,
     fontSize: 24,
     fontWeight: 700,
     color: "#1a1a1a",
@@ -177,7 +175,7 @@ const styles = StyleSheet.create({
 
   ingredientsSection: {
     margin: 18,
-    marginTop: 0,
+    marginTop: 16,
   },
 
   arrowCircle: {
@@ -187,28 +185,37 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
+    // borderWidth: 1,
+    // borderColor: "#eb5757",
   },
 
   ingredientsSectionTitle: {
-    marginBottom: 12,
+    marginBottom: 8,
     fontSize: 16,
     fontWeight: 600,
-    color: "#1a1a1a",
+    color: "#eb5757",
   },
 
   swiperContainer: {
     // gap: 10,
-    height: 70,
+    height: 86,
   },
 
   ingredientsCard: {
     margin: 8,
-    marginBottom: 18,
+    marginBottom: 26,
     marginRight: 16,
     borderRadius: 8,
-    backgroundColor: "#f7f2fa",
-    height: 61,
+    height: 72,
     width: 164,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    elevation: 3,
+    shadowColor: "#686666",
+    shadowOpacity: 0.5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 3,
   },
 
   cardTextContainer: {

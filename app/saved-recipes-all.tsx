@@ -44,20 +44,44 @@ function groupIngredients(ingredients: any[]) {
   return groups.filter((g) => g.items.length > 0);
 }
 
-const [ingredients, setIngredients] = useState<any[]>([]);
-
-const handleDelete = async (name: string) => {
-  await fetch(
-    `http://YOUR_IP:5000/delete-ingredient?name=${encodeURIComponent(name)}`,
-    {
-      method: "DELETE",
-    }
-  );
-  setIngredients((prev) => prev.filter((item) => item.name !== name));
-};
-
 export default function IndexSeeAllScreen() {
   const [groups, setGroups] = useState<any[]>([]);
+  const [ingredients, setIngredients] = useState<any[]>([]);
+
+  const handleDelete = async (name: string) => {
+    await fetch(
+      `http://YOUR_IP:5000/delete-ingredient?name=${encodeURIComponent(name)}`,
+      {
+        method: "DELETE",
+      }
+    );
+    setIngredients((prev: any[]) => prev.filter((item: any) => item.name !== name));
+  };
+
+  const renderItem = ({ item }: { item: any }) => (
+    <Swipeable
+      renderRightActions={() => (
+        <View
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            width: 80,
+            backgroundColor: "red",
+          }}
+        >
+          <Feather name="trash-2" size={24} color="white" />
+        </View>
+      )}
+      onSwipeableOpen={() => handleDelete(item.name)}
+    >
+      <Card style={styles.ingredientsCard} elevation={0}>
+        <Card.Content style={styles.cardTextContainer}>
+          <Text style={styles.cardCategory}>{item.category}</Text>
+          <Text style={styles.cardIngredient}>{item.name}</Text>
+        </Card.Content>
+      </Card>
+    </Swipeable>
+  );
 
   useEffect(() => {
     fetch("http://localhost:8080/all-ingredients")
@@ -87,31 +111,6 @@ export default function IndexSeeAllScreen() {
     </ScrollView>
   );
 }
-
-const renderItem = ({ item }: { item: any }) => (
-  <Swipeable
-    renderRightActions={() => (
-      <View
-        style={{
-          justifyContent: "center",
-          alignItems: "center",
-          width: 80,
-          backgroundColor: "red",
-        }}
-      >
-        <Feather name="trash-2" size={24} color="white" />
-      </View>
-    )}
-    onSwipeableOpen={() => handleDelete(item.name)}
-  >
-    <Card style={styles.ingredientsCard} elevation={0}>
-      <Card.Content style={styles.cardTextContainer}>
-        <Text style={styles.cardCategory}>{item.category}</Text>
-        <Text style={styles.cardIngredient}>{item.name}</Text>
-      </Card.Content>
-    </Card>
-  </Swipeable>
-);
 
 const { width } = Dimensions.get("window");
 const CARD_GAP = 16;
