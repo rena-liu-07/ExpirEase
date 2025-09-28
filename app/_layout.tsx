@@ -7,28 +7,28 @@
 // import { PaperProvider } from "react-native-paper";
 // import { SafeAreaProvider } from "react-native-safe-area-context";
 
-function RouteGuard({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const { user, isLoadingUser } = useAuth();
-  const [mounted, setMounted] = useState(false);
-  const segments = useSegments();
+// function RouteGuard({ children }: { children: React.ReactNode }) {
+//   const router = useRouter();
+//   const { user, isLoadingUser } = useAuth();
+//   const [mounted, setMounted] = useState(false);
+//   const segments = useSegments();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+//   useEffect(() => {
+//     setMounted(true);
+//   }, []);
 
-  useEffect(() => {
-    const inAuthGroup = segments[0] === "auth";
+//   useEffect(() => {
+//     const inAuthGroup = segments[0] === "auth";
 
-    if (mounted && !user && !inAuthGroup && !isLoadingUser) {
-      router.replace("/auth");
-    } else if (user && inAuthGroup && !isLoadingUser) {
-      router.replace("/(tabs)");
-    }
-  }, [mounted, user, segments]);
+//     if (mounted && !user && !inAuthGroup && !isLoadingUser) {
+//       router.replace("/auth");
+//     } else if (user && inAuthGroup && !isLoadingUser) {
+//       router.replace("/(tabs)");
+//     }
+//   }, [mounted, user, segments]);
 
-  return <>{children}</>;
-}
+//   return <>{children}</>;
+// }
 
 // export default function RootLayout() {
 //   return (
@@ -65,40 +65,10 @@ import { PaperProvider } from "react-native-paper";
 
 export default function RootLayout() {
   return (
-<<<<<<< HEAD
     <PaperProvider>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
     </PaperProvider>
-=======
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <AuthProvider>
-        <PaperProvider>
-          <SafeAreaProvider>
-            <RouteGuard>
-              <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen
-                  name="index-see-all"
-                  options={{
-                    headerShown: false,
-                    presentation: 'modal'
-                  }}
-                />
-                <Stack.Screen
-                  name="profile-settings"
-                  options={{
-                    headerShown: false,
-                    presentation: 'modal'
-                  }}
-                />
-              </Stack>
-            </RouteGuard>
-          </SafeAreaProvider>
-        </PaperProvider>
-      </AuthProvider>
-    </GestureHandlerRootView>
->>>>>>> d810e4e2c7c75c4a78b16a9cca6892c994081e30
   );
 }
