@@ -80,32 +80,16 @@ export default function GenerateRecipeScreen() {
         prioritize_expiring: prioritizeExpiring,
       };
 
-      // Try to call the API first
-      let data: RecipeResponse;
-      try {
-        data = (await apiCall(API_ENDPOINTS.GENERATE_RECIPE, {
-          method: "POST",
-          body: JSON.stringify(requestBody),
-        })) as RecipeResponse;
-      } catch (apiError) {
-        console.log("API call failed, using mock recipe:", apiError);
-        // Mock recipe generation when backend is unavailable
-        data = {
-          success: true,
-          recipe: generateMockRecipe(
-            recipeSize,
-            cuisinePreference,
-            dietaryRestrictions
-          ),
-        };
-      }
+      // Call the API to generate recipe from database
+      const data = (await apiCall(API_ENDPOINTS.GENERATE_RECIPE, {
+        method: "POST",
+        body: JSON.stringify(requestBody),
+      })) as RecipeResponse;
 
       if (data.success && data.recipe) {
-        // Extract recipe title from the content (first line or first few words)
+        // Extract recipe title from the AI-generated content
         const recipeLines = data.recipe.split("\n");
-        const title =
-          recipeLines[0].replace(/[🍳📊🌍⭐*#]/g, "").trim() ||
-          `${cuisinePreference || "Delicious"} ${recipeSize} Recipe`;
+        const title = recipeLines[0].replace(/[🍳📊🌍⭐*#]/g, "").trim();
 
         const newRecipe: Recipe = {
           id: Date.now().toString(),
@@ -120,76 +104,20 @@ export default function GenerateRecipeScreen() {
         setRecipes((prev) => [newRecipe, ...prev]);
         Alert.alert("Success!", "New recipe generated successfully!");
       } else {
-        Alert.alert("Error", data.error || "Failed to generate recipe");
+        Alert.alert("Error", data.error || "Failed to generate recipe from database");
       }
     } catch (error) {
-      Alert.alert("Error", "An unexpected error occurred");
+      Alert.alert(
+        "Connection Error", 
+        "Unable to connect to the recipe database. Please ensure the backend server is running."
+      );
       console.error("Recipe generation error:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const generateMockRecipe = (
-    size: string,
-    cuisine: string,
-    dietary: string
-  ) => {
-    const baseIngredients = [
-      "chicken breast",
-      "tomatoes",
-      "asparagus",
-      "strawberries",
-      "apple",
-      "grapes",
-      "banana",
-    ];
-    const cuisineStyles = {
-      Italian: "al Pomodoro with Fresh Herbs",
-      Asian: "Stir-Fry with Seasonal Fruits",
-      Mexican: "with Salsa Fresca",
-      "": "with Garden Vegetables",
-    };
 
-    const recipeName = `${cuisine || "Delicious"} ${
-      size.charAt(0).toUpperCase() + size.slice(1)
-    } ${
-      cuisineStyles[cuisine as keyof typeof cuisineStyles] || cuisineStyles[""]
-    }`;
-
-    return `🍳 **${recipeName}**
-
-📊 **Recipe Size:** ${size.charAt(0).toUpperCase() + size.slice(1)}
-${dietary ? `🥗 **Dietary Notes:** ${dietary}\n` : ""}${
-      cuisine ? `🌍 **Cuisine Style:** ${cuisine}\n` : ""
-    }
-
-📋 **Ingredients:**
-${baseIngredients
-  .slice(0, size === "small" ? 4 : size === "large" ? 7 : 5)
-  .map(
-    (ingredient, i) =>
-      `${i + 1}. ${ingredient.charAt(0).toUpperCase() + ingredient.slice(1)}`
-  )
-  .join("\n")}
-
-⏰ **Use These First (Expiring Soon):**
-• Strawberries (expires in 1 days)
-• Banana (expires in 2 days)
-
-👨‍🍳 **Instructions:**
-1. Prepare all ingredients by washing and chopping as needed
-2. Heat oil in a large pan over medium-high heat
-3. Cook protein ingredients first until properly cooked
-4. Add vegetables in order of cooking time needed
-5. Incorporate fruits toward the end to maintain texture
-6. Season with salt, pepper, and herbs to taste
-7. Serve immediately while hot
-
-⏱️ **Estimated Cooking Time:** 25-30 minutes
-
-💡 **Note:** This recipe uses your available ingredients. The backend AI will provide more personalized recipes once connected!`;
-  };
 
   const resetOptions = () => {
     setRecipeSize("medium");
