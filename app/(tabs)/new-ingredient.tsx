@@ -1,4 +1,4 @@
-import axios from "axios";
+// import axios from "axios";
 import React, { useRef, useState } from "react";
 import {
   Alert, Animated,
@@ -39,16 +39,25 @@ export default function NewIngredientScreen() {
       return;
     }
     try {
-      // Change the URL below to your backend endpoint
-      await axios.post("http://localhost:8080/add_ingredient", {
-        name: ingredientName,
-        category,
-        expiration_date: expirationDate,
+      const response = await fetch("http://localhost:8080/add_ingredient", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: ingredientName,
+          category,
+          expiration_date: expirationDate,
+        }),
       });
-      Alert.alert("Success", "Ingredient added!");
-      setIngredientName("");
-      setCategory("");
-      setExpirationDate("");
+      if (response.ok) {
+        Alert.alert("Success", "Ingredient added!");
+        setIngredientName("");
+        setCategory("");
+        setExpirationDate("");
+      } else {
+        Alert.alert("Error", "Failed to add ingredient.");
+      }
     } catch (error) {
       Alert.alert("Error", "Failed to add ingredient.");
     }
