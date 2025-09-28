@@ -14,12 +14,12 @@ export default function TabsLayout() {
           tabBarShowLabel: false,
           tabBarIcon: ({ focused }) => {
             return focused ? (
-              <MaterialCommunityIcons name="home" size={26} color="black" />
+              <MaterialCommunityIcons name="home" size={26} color="#eb5757" />
             ) : (
               <MaterialCommunityIcons
                 name="home-outline"
                 size={26}
-                color="black"
+                color="#eb5757"
               />
             );
           },
@@ -30,11 +30,12 @@ export default function TabsLayout() {
         options={{
           headerShown: false,
           tabBarShowLabel: false,
+          href: null,
           tabBarIcon: ({ focused }) => {
             return focused ? (
-              <FontAwesome name="bookmark" size={24} color="black" />
+              <FontAwesome name="bookmark" size={24} color="#eb5757" />
             ) : (
-              <FontAwesome name="bookmark-o" size={24} color="black" />
+              <FontAwesome name="bookmark-o" size={24} color="#eb5757" />
             );
           },
         }}
@@ -46,9 +47,9 @@ export default function TabsLayout() {
           tabBarShowLabel: false,
           tabBarIcon: ({ focused }) => {
             return focused ? (
-              <Entypo name="circle-with-plus" size={24} color="black" />
+              <Entypo name="circle-with-plus" size={24} color="#eb5757" />
             ) : (
-              <Entypo name="plus" size={24} color="black" />
+              <Entypo name="plus" size={24} color="#eb5757" />
             );
           },
         }}
@@ -60,9 +61,9 @@ export default function TabsLayout() {
           tabBarShowLabel: false,
           tabBarIcon: ({ focused }) => {
             return focused ? (
-              <Ionicons name="sparkles" size={24} color="black" />
+              <Ionicons name="sparkles" size={24} color="#eb5757" />
             ) : (
-              <Ionicons name="sparkles-outline" size={24} color="black" />
+              <Ionicons name="sparkles-outline" size={24} color="#eb5757" />
             );
           },
         }}
@@ -72,6 +73,7 @@ export default function TabsLayout() {
         options={{
           headerShown: false,
           tabBarShowLabel: false,
+          href: null,
           tabBarIcon: ({ focused }) => {
             return focused ? (
               <Ionicons name="leaf" size={21} color="black" />

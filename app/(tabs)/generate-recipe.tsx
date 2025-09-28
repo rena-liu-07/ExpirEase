@@ -10,7 +10,7 @@ import {
   Portal,
   RadioButton,
   Text,
-  TextInput
+  TextInput,
 } from "react-native-paper";
 import { API_ENDPOINTS, apiCall } from "../../config/api";
 
@@ -40,18 +40,20 @@ export default function GenerateRecipeScreen() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(false);
-  const [expiringIngredients, setExpiringIngredients] = useState<ExpiringIngredient[]>([]);
-  
+  const [expiringIngredients, setExpiringIngredients] = useState<
+    ExpiringIngredient[]
+  >([]);
+
   // Recipe generation options
   const [recipeSize, setRecipeSize] = useState("medium");
   const [dietaryRestrictions, setDietaryRestrictions] = useState("");
   const [cuisinePreference, setCuisinePreference] = useState("");
   const [prioritizeExpiring, setPrioritizeExpiring] = useState(true);
-  
+
   // Dialog states
   const [showOptionsDialog, setShowOptionsDialog] = useState(false);
   const [showFullscreenRecipe, setShowFullscreenRecipe] = useState(false);
-  
+
   // Load expiring ingredients on component mount
   useEffect(() => {
     loadExpiringIngredients();
@@ -59,7 +61,9 @@ export default function GenerateRecipeScreen() {
 
   const loadExpiringIngredients = async () => {
     try {
-      const data = await apiCall(`${API_ENDPOINTS.EXPIRING_INGREDIENTS}?days_threshold=5`) as ExpiringIngredient[];
+      const data = (await apiCall(
+        `${API_ENDPOINTS.EXPIRING_INGREDIENTS}?days_threshold=5`
+      )) as ExpiringIngredient[];
       setExpiringIngredients(data);
     } catch (error) {
       console.error("Failed to load expiring ingredients:", error);
@@ -79,25 +83,30 @@ export default function GenerateRecipeScreen() {
       // Try to call the API first
       let data: RecipeResponse;
       try {
-        data = await apiCall(API_ENDPOINTS.GENERATE_RECIPE, {
+        data = (await apiCall(API_ENDPOINTS.GENERATE_RECIPE, {
           method: "POST",
           body: JSON.stringify(requestBody),
-        }) as RecipeResponse;
+        })) as RecipeResponse;
       } catch (apiError) {
         console.log("API call failed, using mock recipe:", apiError);
         // Mock recipe generation when backend is unavailable
         data = {
           success: true,
-          recipe: generateMockRecipe(recipeSize, cuisinePreference, dietaryRestrictions)
+          recipe: generateMockRecipe(
+            recipeSize,
+            cuisinePreference,
+            dietaryRestrictions
+          ),
         };
       }
-      
+
       if (data.success && data.recipe) {
         // Extract recipe title from the content (first line or first few words)
-        const recipeLines = data.recipe.split('\n');
-        const title = recipeLines[0].replace(/[🍳📊🌍⭐*#]/g, '').trim() || 
-                      `${cuisinePreference || 'Delicious'} ${recipeSize} Recipe`;
-        
+        const recipeLines = data.recipe.split("\n");
+        const title =
+          recipeLines[0].replace(/[🍳📊🌍⭐*#]/g, "").trim() ||
+          `${cuisinePreference || "Delicious"} ${recipeSize} Recipe`;
+
         const newRecipe: Recipe = {
           id: Date.now().toString(),
           title: title,
@@ -105,10 +114,10 @@ export default function GenerateRecipeScreen() {
           size: recipeSize,
           dietary: dietaryRestrictions,
           cuisine: cuisinePreference,
-          timestamp: new Date()
+          timestamp: new Date(),
         };
-        
-        setRecipes(prev => [newRecipe, ...prev]);
+
+        setRecipes((prev) => [newRecipe, ...prev]);
         Alert.alert("Success!", "New recipe generated successfully!");
       } else {
         Alert.alert("Error", data.error || "Failed to generate recipe");
@@ -121,24 +130,48 @@ export default function GenerateRecipeScreen() {
     }
   };
 
-  const generateMockRecipe = (size: string, cuisine: string, dietary: string) => {
-    const baseIngredients = ["chicken breast", "tomatoes", "asparagus", "strawberries", "apple", "grapes", "banana"];
+  const generateMockRecipe = (
+    size: string,
+    cuisine: string,
+    dietary: string
+  ) => {
+    const baseIngredients = [
+      "chicken breast",
+      "tomatoes",
+      "asparagus",
+      "strawberries",
+      "apple",
+      "grapes",
+      "banana",
+    ];
     const cuisineStyles = {
-      "Italian": "al Pomodoro with Fresh Herbs",
-      "Asian": "Stir-Fry with Seasonal Fruits",
-      "Mexican": "with Salsa Fresca",
-      "": "with Garden Vegetables"
+      Italian: "al Pomodoro with Fresh Herbs",
+      Asian: "Stir-Fry with Seasonal Fruits",
+      Mexican: "with Salsa Fresca",
+      "": "with Garden Vegetables",
     };
-    
-    const recipeName = `${cuisine || 'Delicious'} ${size.charAt(0).toUpperCase() + size.slice(1)} ${cuisineStyles[cuisine as keyof typeof cuisineStyles] || cuisineStyles[""]}`;
-    
+
+    const recipeName = `${cuisine || "Delicious"} ${
+      size.charAt(0).toUpperCase() + size.slice(1)
+    } ${
+      cuisineStyles[cuisine as keyof typeof cuisineStyles] || cuisineStyles[""]
+    }`;
+
     return `🍳 **${recipeName}**
 
 📊 **Recipe Size:** ${size.charAt(0).toUpperCase() + size.slice(1)}
-${dietary ? `🥗 **Dietary Notes:** ${dietary}\n` : ''}${cuisine ? `🌍 **Cuisine Style:** ${cuisine}\n` : ''}
+${dietary ? `🥗 **Dietary Notes:** ${dietary}\n` : ""}${
+      cuisine ? `🌍 **Cuisine Style:** ${cuisine}\n` : ""
+    }
 
 📋 **Ingredients:**
-${baseIngredients.slice(0, size === 'small' ? 4 : size === 'large' ? 7 : 5).map((ingredient, i) => `${i + 1}. ${ingredient.charAt(0).toUpperCase() + ingredient.slice(1)}`).join('\n')}
+${baseIngredients
+  .slice(0, size === "small" ? 4 : size === "large" ? 7 : 5)
+  .map(
+    (ingredient, i) =>
+      `${i + 1}. ${ingredient.charAt(0).toUpperCase() + ingredient.slice(1)}`
+  )
+  .join("\n")}
 
 ⏰ **Use These First (Expiring Soon):**
 • Strawberries (expires in 1 days)
@@ -169,12 +202,8 @@ ${baseIngredients.slice(0, size === 'small' ? 4 : size === 'large' ? 7 : 5).map(
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={styles.header}>
-          <MaterialIcons name="restaurant" size={32} color="#4CAF50" />
-          <Text style={styles.headerTitle}>AI Recipe Generator</Text>
-          <Text style={styles.headerSubtitle}>
-            Create delicious recipes using your available ingredients
-          </Text>
+        <View>
+          <Text style={styles.headerTitle}>Generate Recipe</Text>
         </View>
 
         {/* Expiring Ingredients Alert */}
@@ -183,7 +212,9 @@ ${baseIngredients.slice(0, size === 'small' ? 4 : size === 'large' ? 7 : 5).map(
             <Card.Content>
               <View style={styles.expiringHeader}>
                 <MaterialIcons name="warning" size={24} color="#FF9800" />
-                <Text style={styles.expiringTitle}>Ingredients Expiring Soon</Text>
+                <Text style={styles.expiringTitle}>
+                  Ingredients Expiring Soon
+                </Text>
               </View>
               <Text style={styles.expiringSubtitle}>
                 Use these ingredients to reduce food waste:
@@ -195,10 +226,10 @@ ${baseIngredients.slice(0, size === 'small' ? 4 : size === 'large' ? 7 : 5).map(
                     mode="outlined"
                     style={[
                       styles.expiringChip,
-                      ingredient.days_until_expiry <= 1 && styles.urgentChip
+                      ingredient.days_until_expiry <= 1 && styles.urgentChip,
                     ]}
                     textStyle={[
-                      ingredient.days_until_expiry <= 1 && styles.urgentText
+                      ingredient.days_until_expiry <= 1 && styles.urgentText,
                     ]}
                   >
                     {ingredient.name} ({ingredient.days_until_expiry}d)
@@ -220,7 +251,9 @@ ${baseIngredients.slice(0, size === 'small' ? 4 : size === 'large' ? 7 : 5).map(
             <Text style={styles.settingsTitle}>Recipe Preferences</Text>
             <View style={styles.settingRow}>
               <Text style={styles.settingLabel}>Size:</Text>
-              <Text style={styles.settingValue}>{recipeSize.charAt(0).toUpperCase() + recipeSize.slice(1)}</Text>
+              <Text style={styles.settingValue}>
+                {recipeSize.charAt(0).toUpperCase() + recipeSize.slice(1)}
+              </Text>
             </View>
             {dietaryRestrictions && (
               <View style={styles.settingRow}>
@@ -236,7 +269,9 @@ ${baseIngredients.slice(0, size === 'small' ? 4 : size === 'large' ? 7 : 5).map(
             )}
             <View style={styles.settingRow}>
               <Text style={styles.settingLabel}>Prioritize Expiring:</Text>
-              <Text style={styles.settingValue}>{prioritizeExpiring ? "Yes" : "No"}</Text>
+              <Text style={styles.settingValue}>
+                {prioritizeExpiring ? "Yes" : "No"}
+              </Text>
             </View>
           </Card.Content>
         </Card>
@@ -248,10 +283,11 @@ ${baseIngredients.slice(0, size === 'small' ? 4 : size === 'large' ? 7 : 5).map(
             onPress={() => setShowOptionsDialog(true)}
             style={styles.optionsButton}
             icon="tune"
+            labelStyle={{ color: "#1a1a1a" }}
           >
             Customize Options
           </Button>
-          
+
           <Button
             mode="contained"
             onPress={generateRecipe}
@@ -276,6 +312,7 @@ ${baseIngredients.slice(0, size === 'small' ? 4 : size === 'large' ? 7 : 5).map(
                 generateRecipe();
               }}
               style={styles.quickButton}
+              labelStyle={{ color: "#1a1a1a" }}
             >
               Italian
             </Button>
@@ -287,6 +324,7 @@ ${baseIngredients.slice(0, size === 'small' ? 4 : size === 'large' ? 7 : 5).map(
                 generateRecipe();
               }}
               style={styles.quickButton}
+              labelStyle={{ color: "#1a1a1a" }}
             >
               Asian
             </Button>
@@ -298,6 +336,7 @@ ${baseIngredients.slice(0, size === 'small' ? 4 : size === 'large' ? 7 : 5).map(
                 generateRecipe();
               }}
               style={styles.quickButton}
+              labelStyle={{ color: "#1a1a1a" }}
             >
               Vegetarian
             </Button>
@@ -326,7 +365,7 @@ ${baseIngredients.slice(0, size === 'small' ? 4 : size === 'large' ? 7 : 5).map(
                       {recipe.timestamp.toLocaleDateString()}
                     </Text>
                   </View>
-                  
+
                   <View style={styles.recipeCardDetails}>
                     <View style={styles.recipeCardTags}>
                       <Chip mode="outlined" compact style={styles.recipeTag}>
@@ -344,14 +383,23 @@ ${baseIngredients.slice(0, size === 'small' ? 4 : size === 'large' ? 7 : 5).map(
                       )}
                     </View>
                   </View>
-                  
+
                   <Text style={styles.recipeCardPreview} numberOfLines={3}>
-                    {recipe.content.replace(/[🍳📊🌍⏰👨‍🍳💡⭐*#]/g, '').substring(0, 120)}...
+                    {recipe.content
+                      .replace(/[🍳📊🌍⏰👨‍🍳💡⭐*#]/g, "")
+                      .substring(0, 120)}
+                    ...
                   </Text>
-                  
+
                   <View style={styles.recipeCardFooter}>
-                    <Text style={styles.tapToViewText}>Tap to view full recipe</Text>
-                    <MaterialIcons name="chevron-right" size={20} color="#666" />
+                    <Text style={styles.tapToViewText}>
+                      Tap to view full recipe
+                    </Text>
+                    <MaterialIcons
+                      name="chevron-right"
+                      size={20}
+                      color="#666"
+                    />
                   </View>
                 </Card.Content>
               </Card>
@@ -362,7 +410,10 @@ ${baseIngredients.slice(0, size === 'small' ? 4 : size === 'large' ? 7 : 5).map(
 
       {/* Options Dialog */}
       <Portal>
-        <Dialog visible={showOptionsDialog} onDismiss={() => setShowOptionsDialog(false)}>
+        <Dialog
+          visible={showOptionsDialog}
+          onDismiss={() => setShowOptionsDialog(false)}
+        >
           <Dialog.Title>Recipe Options</Dialog.Title>
           <Dialog.Content>
             <ScrollView>
@@ -389,7 +440,9 @@ ${baseIngredients.slice(0, size === 'small' ? 4 : size === 'large' ? 7 : 5).map(
               <Divider style={styles.divider} />
 
               {/* Dietary Restrictions */}
-              <Text style={styles.dialogSectionTitle}>Dietary Restrictions</Text>
+              <Text style={styles.dialogSectionTitle}>
+                Dietary Restrictions
+              </Text>
               <TextInput
                 value={dietaryRestrictions}
                 onChangeText={setDietaryRestrictions}
@@ -411,16 +464,22 @@ ${baseIngredients.slice(0, size === 'small' ? 4 : size === 'large' ? 7 : 5).map(
               {/* Prioritize Expiring */}
               <View style={styles.checkboxRow}>
                 <RadioButton.Group
-                  onValueChange={(value) => setPrioritizeExpiring(value === "true")}
+                  onValueChange={(value) =>
+                    setPrioritizeExpiring(value === "true")
+                  }
                   value={prioritizeExpiring.toString()}
                 >
                   <View style={styles.radioRow}>
                     <RadioButton value="true" />
-                    <Text style={styles.radioLabel}>Prioritize expiring ingredients</Text>
+                    <Text style={styles.radioLabel}>
+                      Prioritize expiring ingredients
+                    </Text>
                   </View>
                   <View style={styles.radioRow}>
                     <RadioButton value="false" />
-                    <Text style={styles.radioLabel}>Use any available ingredients</Text>
+                    <Text style={styles.radioLabel}>
+                      Use any available ingredients
+                    </Text>
                   </View>
                 </RadioButton.Group>
               </View>
@@ -433,8 +492,8 @@ ${baseIngredients.slice(0, size === 'small' ? 4 : size === 'large' ? 7 : 5).map(
         </Dialog>
 
         {/* Fullscreen Recipe Display */}
-        <Dialog 
-          visible={showFullscreenRecipe} 
+        <Dialog
+          visible={showFullscreenRecipe}
           onDismiss={() => setShowFullscreenRecipe(false)}
           style={styles.fullscreenDialog}
         >
@@ -449,7 +508,9 @@ ${baseIngredients.slice(0, size === 'small' ? 4 : size === 'large' ? 7 : 5).map(
             </ScrollView>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={() => setShowFullscreenRecipe(false)}>Close</Button>
+            <Button onPress={() => setShowFullscreenRecipe(false)}>
+              Close
+            </Button>
             <Button
               mode="contained"
               onPress={() => {
@@ -469,19 +530,16 @@ ${baseIngredients.slice(0, size === 'small' ? 4 : size === 'large' ? 7 : 5).map(
 const styles: any = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
-  header: {
-    alignItems: "center",
-    padding: 20,
-    backgroundColor: "white",
-    marginBottom: 10,
+    backgroundColor: "#fcfcfa",
+    padding: 24,
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginTop: 10,
-    color: "#333",
+    margin: 18,
+    marginBottom: 18,
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1a1a1a",
+    textAlign: "center",
   },
   headerSubtitle: {
     fontSize: 14,
@@ -533,6 +591,7 @@ const styles: any = StyleSheet.create({
   },
   settingsCard: {
     margin: 10,
+    backgroundColor: "#fcfcfa",
   },
   settingsTitle: {
     fontSize: 16,
@@ -557,10 +616,11 @@ const styles: any = StyleSheet.create({
     gap: 10,
   },
   optionsButton: {
-    borderColor: "#4CAF50",
+    borderColor: "#1a1a1a",
+    color: "#eb5757",
   },
   generateButton: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#eb5757",
   },
   quickActionsContainer: {
     padding: 10,
@@ -621,12 +681,14 @@ const styles: any = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 15,
-    color: "#333",
+    color: "#1a1a1a",
   },
   recipeCard: {
     marginBottom: 15,
-    elevation: 2,
-    backgroundColor: "white",
+    elevation: 0,
+    backgroundColor: "#fcfcfa",
+    borderWidth: 1,
+    borderColor: "#1a1a1a",
   },
   recipeCardHeader: {
     flexDirection: "row",
@@ -637,7 +699,7 @@ const styles: any = StyleSheet.create({
   recipeCardTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#333",
+    color: "#1a1a1a",
     flex: 1,
     marginRight: 10,
   },
@@ -673,7 +735,7 @@ const styles: any = StyleSheet.create({
   },
   tapToViewText: {
     fontSize: 12,
-    color: "#4CAF50",
+    color: "#1a1a1a",
     fontWeight: "500",
   },
   // Fullscreen dialog styles
@@ -691,6 +753,6 @@ const styles: any = StyleSheet.create({
   fullscreenRecipeText: {
     fontSize: 15,
     lineHeight: 22,
-    color: "#333",
+    color: "#1a1a1a",
   },
 });

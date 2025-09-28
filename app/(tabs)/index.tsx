@@ -29,7 +29,9 @@ function groupIngredients(ingredients: any[]) {
 
   for (const ing of ingredients) {
     const exp = new Date(ing.expiration);
-    const days = Math.floor((exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const days = Math.floor(
+      (exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    );
     for (const group of groups) {
       if (group.test(days) && !used.has(ing.name)) {
         group.items.push(ing);
@@ -84,6 +86,7 @@ export default function Index() {
             mode="text"
             style={{ marginRight: 18 }}
             onPress={() => router.push("/index-see-all")}
+            labelStyle={{ color: "#1a1a1a" }}
           >
             See All
           </Button>
