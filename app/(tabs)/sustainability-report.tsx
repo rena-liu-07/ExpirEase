@@ -1,5 +1,6 @@
+import { useRouter } from "expo-router";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Avatar, Surface } from "react-native-paper";
 
 const expiredThisMonth = 7; // Example value, replace with real calculation
@@ -14,12 +15,15 @@ const barData = [
 ];
 
 export default function SustainabilityReportScreen() {
+  const router = useRouter();
   return (
     <View style={styles.container}>
       {/* Title and Profile Icon */}
       <View style={styles.headerRow}>
         <Text style={styles.heading}>Sustainability Report</Text>
-        <Avatar.Icon size={40} icon="account" style={styles.avatar} />
+        <TouchableOpacity onPress={() => router.push("/profile-settings")}>
+          <Avatar.Icon size={40} icon="account" style={styles.avatar} />
+        </TouchableOpacity>
       </View>
 
       {/* Expired Items Card */}
@@ -68,14 +72,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fcfcfa",
-    padding: 16,
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingTop: 8,
   },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 24,
-    marginTop: 8,
   },
   heading: {
     margin: 18,

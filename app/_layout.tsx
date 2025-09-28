@@ -33,10 +33,34 @@ import { PaperProvider } from "react-native-paper";
 
 export default function RootLayout() {
   return (
-    <PaperProvider>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
-    </PaperProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AuthProvider>
+        <PaperProvider>
+          <SafeAreaProvider>
+            <RouteGuard>
+              <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="index-see-all"
+                  options={{
+                    ...TransitionPresets.SlideFromRightIOS,
+                    gestureEnabled: true,
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen
+                  name="profile-settings"
+                  options={{
+                    ...TransitionPresets.SlideFromRightIOS,
+                    gestureEnabled: true,
+                    headerShown: false,
+                  }}
+                />
+              </Stack>
+            </RouteGuard>
+          </SafeAreaProvider>
+        </PaperProvider>
+      </AuthProvider>
+    </GestureHandlerRootView>
   );
 }
