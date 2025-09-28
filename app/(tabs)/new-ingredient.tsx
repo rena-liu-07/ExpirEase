@@ -1,17 +1,131 @@
+import * as ImagePicker from "expo-image-picker";
 import React, { useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Easing,
+  Image,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 export default function NewIngredientScreen() {
   const [mode, setMode] = useState("manual");
   const anim = useRef(new Animated.Value(0)).current;
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [webFiles, setWebFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Permission for media library
+  const requestMediaLibraryPermission = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Media library permission denied",
+        "Please enable photo library access in settings."
+      );
+      return false;
+    }
+    return true;
+  };
+
+
+  // Pick images from device library
+  const pickImages = async () => {
+    if (Platform.OS === 'web') {
+      // For web, use file input
+      if (fileInputRef.current) {
+        fileInputRef.current.click();
+      }
+    } else {
+      // For mobile, use ImagePicker
+      const hasPermission = await requestMediaLibraryPermission();
+      if (!hasPermission) return;
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: 'images',
+        allowsMultipleSelection: true,
+        selectionLimit: 20,
+        quality: 1,
+      });
+      if (!result.canceled && result.assets?.length) {
+        const newPhotos = [...photos, ...result.assets.map((asset) => asset.uri)];
+        setPhotos(newPhotos);
+        handlePhotoSubmission(newPhotos);
+      }
+    }
+  };
+
+  // Handle web file selection
+  const handleWebFileSelect = (event: any) => {
+    const files = Array.from(event.target.files) as File[];
+    if (files.length > 0) {
+      setWebFiles([...webFiles, ...files]);
+      const newPhotos = [...photos, ...files.map((file) => URL.createObjectURL(file))];
+      setPhotos(newPhotos);
+      handlePhotoSubmission(undefined, files);
+    }
+  };
+
+  // Remove photo
+  const removePhoto = (uri: string) => {
+    setPhotos(photos.filter((photo) => photo !== uri));
+  };
+
+
+
+  const handlePhotoSubmission = async (photoArray = photos, files?: File[]) => {
+    try {
+      console.log('handlePhotoSubmission called');
+      console.log('Platform.OS:', Platform.OS);
+      console.log('files:', files);
+      console.log('webFiles.length:', webFiles.length);
+      console.log('photos.length:', photoArray.length);
+      
+      if (Platform.OS === 'web' && files && files.length > 0) {
+        // For web, use actual File objects
+        const formData = new FormData();
+        files.forEach((file) => {
+          formData.append('images', file);
+        });
+        const response = await fetch('http://localhost:5000/photo_scanner', {
+          method: 'POST',
+          body: formData as any,
+        });
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        console.log('Scanner response:', data);
+        Alert.alert('Success', 'Photo processed successfully!');
+      } else if (Platform.OS === 'web' && webFiles.length > 0) {
+        // Use stored web files
+        const formData = new FormData();
+        webFiles.forEach((file) => {
+          formData.append('images', file);
+        });
+        const response = await fetch('http://localhost:5000/photo_scanner', {
+          method: 'POST',
+          body: formData as any,
+        });
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        console.log('Scanner response:', data);
+        Alert.alert('Success', 'Photo processed successfully!');
+      } else {
+        Alert.alert('Error', 'No images to upload');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', String((error as any)?.message || error));
+    }
+  };
 
   const toggle = () => {
     const next = mode === "manual" ? "photo" : "manual";
@@ -32,55 +146,84 @@ export default function NewIngredientScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Add New Ingredient</Text>
-      <TouchableOpacity
-        style={styles.toggleContainer}
-        onPress={toggle}
-        activeOpacity={0.8}
-      >
-        <Animated.View
-          style={[styles.toggleBackground, { transform: [{ translateX }] }]}
+    <TouchableOpacity
+      style={styles.toggleContainer}
+      onPress={toggle}
+      activeOpacity={0.8}
+    >
+      <Animated.View
+        style={[styles.toggleBackground, { transform: [{ translateX }] }]}
+      />
+      <View style={styles.toggleContent}>
+        <Text
+          style={[
+            styles.toggleText,
+            mode === "manual" && styles.toggleTextActive,
+          ]}
+        >
+          Manual
+        </Text>
+        <Text
+          style={[
+            styles.toggleText,
+            mode === "photo" && styles.toggleTextActive,
+          ]}
+        >
+          Photo
+        </Text>
+      </View>
+    </TouchableOpacity>
+    {mode === "manual" ? (
+      <View style={styles.manualSection}>
+        <TextInput style={styles.input} placeholder="Ingredient Name" />
+        <TextInput style={styles.input} placeholder="Category" />
+        <TextInput
+          style={styles.input}
+          placeholder="Expiration Date (YYYY-MM-DD)"
         />
-        <View style={styles.toggleContent}>
-          <Text
-            style={[
-              styles.toggleText,
-              mode === "manual" && styles.toggleTextActive,
-            ]}
-          >
-            Manual
-          </Text>
-          <Text
-            style={[
-              styles.toggleText,
-              mode === "photo" && styles.toggleTextActive,
-            ]}
-          >
-            Photo
-          </Text>
-        </View>
-      </TouchableOpacity>
-      {mode === "manual" ? (
-        <View style={styles.manualSection}>
-          <TextInput style={styles.input} placeholder="Ingredient Name" />
-          <TextInput style={styles.input} placeholder="Category" />
-          <TextInput
-            style={styles.input}
-            placeholder="Expiration Date (YYYY-MM-DD)"
+        <TouchableOpacity style={styles.buttonContainer}>
+          <Text style={styles.buttonText}>Add Ingredient</Text>
+        </TouchableOpacity>
+      </View>
+    ) : (
+      <View style={styles.photoTabRectangle}>
+        {Platform.OS === 'web' && (
+          <input
+            ref={fileInputRef as any}
+            type="file"
+            accept="image/*"
+            multiple
+            style={{ display: 'none' }}
+            onChange={handleWebFileSelect}
           />
-          <TouchableOpacity style={styles.buttonContainer}>
-            <Text style={styles.buttonText}>Add Ingredient</Text>
-          </TouchableOpacity>
+        )}
+        <TouchableOpacity style={styles.selectButton} onPress={pickImages}>
+          <Text style={styles.selectButtonText}>Select Photos from Device</Text>
+        </TouchableOpacity>
+        <View style={styles.photoDisplayAreaGrid}>
+          {photos.length > 0 ? (
+            <ScrollView contentContainerStyle={styles.photoGridScrollContent}>
+              <View style={styles.photoGrid}>
+                {photos.map((uri) => (
+                  <View key={uri} style={styles.imageContainerDisplay}>
+                    <Image source={{ uri }} style={styles.imageDisplay} />
+                    <TouchableOpacity style={styles.deleteButton} onPress={() => removePhoto(uri)}>
+                      <Text style={styles.deleteButtonText}>Delete</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
+          ) : (
+            <Text style={styles.photoPlaceholder}>No photos yet</Text>
+          )}
         </View>
-      ) : (
-        // PUT PHOTO UPLOAD HERE (START)
-        <View style={styles.photoSection}>
-          <Text style={styles.photoPlaceholder}>
-            [Photo input section here]
-          </Text>
-        </View>
-        // PUT PHOTO UPLOAD HERE (END)
-      )}
-    </View>
+        <TouchableOpacity style={styles.scanButton} onPress={() => handlePhotoSubmission()}>
+          <Text style={styles.scanButtonText}>Scan</Text>
+        </TouchableOpacity>
+      </View>
+    )}
+  </View>
   );
 }
 
@@ -97,7 +240,7 @@ const styles = StyleSheet.create({
     margin: 18,
     marginBottom: 18,
     fontSize: 20,
-    fontWeight: 700,
+    fontWeight: "700",
     color: "#1a1a1a",
     textAlign: "center",
   },
@@ -132,7 +275,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#686666",
     fontSize: 14,
-    fontWeight: "medium",
+    fontWeight: "500",
   },
   toggleTextActive: {
     color: "#fff",
@@ -163,16 +306,102 @@ const styles = StyleSheet.create({
     color: "#fcfcfa",
     fontSize: 16,
   },
-  photoSection: {
-    marginTop: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    height: 150,
-    backgroundColor: "#f3e5f5",
+  photoTabRectangle: {
+    width: '100%',
+    minHeight: 350,
+    maxHeight: '80%',
+    backgroundColor: '#f3e5f5',
     borderRadius: 8,
+    padding: 12,
+    marginTop: 16,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    flexGrow: 1,
+  },
+  selectButton: {
+    backgroundColor: "#1a1a1a",
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    marginBottom: 16,
+    alignSelf: "center",
+    alignItems: "center",
+    // Remove alignSelf: "stretch" and make width fit content
+  },
+  selectButtonText: {
+    color: "#fcfcfa",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  photoDisplayAreaGrid: {
+    flex: 1,
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 8,
+    minHeight: 0,
+  },
+  photoGridScrollContent: {
+    alignItems: "center",
+    paddingVertical: 8,
+    flexGrow: 1,
+  },
+  photoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    width: '100%',
+  },
+  imageContainerDisplay: {
+    marginRight: 16,
+    marginBottom: 16,
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  imageDisplay: {
+    width: 120,
+    height: 120,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  deleteButton: {
+    backgroundColor: "#e57373",
+    borderRadius: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    marginTop: 4,
+  },
+  deleteButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 14,
   },
   photoPlaceholder: {
     color: "#686666",
     fontSize: 16,
+    marginTop: 24,
+  },
+  scanButton: {
+    backgroundColor: '#1976d2',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    marginTop: 18,
+    alignSelf: 'center',
+    alignItems: 'center',
+  },
+  scanButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 1,
   },
 });

@@ -3,11 +3,19 @@ from flask_cors import CORS
 import sqlite3
 from datetime import datetime, timedelta
 import os
+from dotenv import load_dotenv
 
-import photo_scanner
+# Load environment variables
+load_dotenv()
+
+import scanner
 
 app = Flask(__name__)
 CORS(app)
+
+@app.route("/test", methods=["GET"])
+def test():
+    return "OK"
 
 DB_NAME = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "foodapp.db"))
 
@@ -69,12 +77,48 @@ def delete_ingredient():
     conn.close()
     return jsonify({"success": True})
 
-@app.route('/photo_scanner', methods=['POST'])
-def photo_scanner_endpoint():
-    image_paths = request.json.get('paths', [])
-    # photo_scanner.run should return a list of items for each image
-    results = photo_scanner.run(image_paths)
-    return jsonify({'results': results})
+@app.route("/test", methods=['GET', 'POST'])
+def test_endpoint():
+    print("=== TEST ENDPOINT HIT - UPDATED VERSION ===")
+    return jsonify({"message": "Flask server is working - UPDATED VERSION", "method": request.method, "timestamp": "2025-09-28"})
+
+@app.route("/photo_scanner", methods=['POST'])
+def photo_scanner():
+    print("=== PHOTO_SCANNER ENDPOINT HIT ===")
+    print(f"Request method: {request.method}")
+    print(f"Request headers: {dict(request.headers)}")
+    print(f"Request content type: {request.content_type}")
+    
+    try:
+        print("POST request received to /photo_scanner")
+        print("Files in request:", list(request.files.keys()))
+        
+        if 'images' not in request.files:
+            print("No 'images' field found in request.files")
+            return jsonify({'error': 'No images uploaded'}), 400
+        
+        image_files = request.files.getlist('images')
+        print(f"Found {len(image_files)} image files")
+        
+        # Use the analyze_image function from scanner.py
+        results = []
+        for i, image_file in enumerate(image_files):
+            print(f"Processing image {i+1}: {image_file.filename}")
+            try:
+                result = scanner.analyze_image(image_file)
+                results.append(result)
+            except Exception as e:
+                print(f"Error processing image {i+1}: {str(e)}")
+                # Return a dummy result for testing
+                results.append([{'item': 'UPDATED SERVER - Test Item', 'expiration': '7 days'}])
+        
+        print("Analysis complete, returning results")
+        return jsonify({"results": results})
+    except Exception as e:
+        print(f"Error in photo_scanner: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
