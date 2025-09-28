@@ -1,17 +1,21 @@
+import axios from "axios";
 import React, { useRef, useState } from "react";
 import {
-  Animated,
+  Alert, Animated,
   Easing,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 export default function NewIngredientScreen() {
   const [mode, setMode] = useState("manual");
   const anim = useRef(new Animated.Value(0)).current;
+  const [ingredientName, setIngredientName] = useState("");
+  const [category, setCategory] = useState("");
+  const [expirationDate, setExpirationDate] = useState("");
 
   const toggle = () => {
     const next = mode === "manual" ? "photo" : "manual";
@@ -26,8 +30,29 @@ export default function NewIngredientScreen() {
 
   const translateX = anim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 78.5], // adjust 120 to half the width of your toggle
+    outputRange: [0, 78.5],
   });
+
+  const handleAddIngredient = async () => {
+    if (!ingredientName || !category || !expirationDate) {
+      Alert.alert("Error", "Please fill in all fields.");
+      return;
+    }
+    try {
+      // Change the URL below to your backend endpoint
+      await axios.post("http://localhost:8080/add_ingredient", {
+        name: ingredientName,
+        category,
+        expiration_date: expirationDate,
+      });
+      Alert.alert("Success", "Ingredient added!");
+      setIngredientName("");
+      setCategory("");
+      setExpirationDate("");
+    } catch (error) {
+      Alert.alert("Error", "Failed to add ingredient.");
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -42,18 +67,12 @@ export default function NewIngredientScreen() {
         />
         <View style={styles.toggleContent}>
           <Text
-            style={[
-              styles.toggleText,
-              mode === "manual" && styles.toggleTextActive,
-            ]}
+            style={[styles.toggleText, mode === "manual" && styles.toggleTextActive]}
           >
             Manual
           </Text>
           <Text
-            style={[
-              styles.toggleText,
-              mode === "photo" && styles.toggleTextActive,
-            ]}
+            style={[styles.toggleText, mode === "photo" && styles.toggleTextActive]}
           >
             Photo
           </Text>
@@ -61,13 +80,25 @@ export default function NewIngredientScreen() {
       </TouchableOpacity>
       {mode === "manual" ? (
         <View style={styles.manualSection}>
-          <TextInput style={styles.input} placeholder="Ingredient Name" />
-          <TextInput style={styles.input} placeholder="Category" />
+          <TextInput
+            style={styles.input}
+            placeholder="Ingredient Name"
+            value={ingredientName}
+            onChangeText={setIngredientName}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Category"
+            value={category}
+            onChangeText={setCategory}
+          />
           <TextInput
             style={styles.input}
             placeholder="Expiration Date (YYYY-MM-DD)"
+            value={expirationDate}
+            onChangeText={setExpirationDate}
           />
-          <TouchableOpacity style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.buttonContainer} onPress={handleAddIngredient}>
             <Text style={styles.buttonText}>Add Ingredient</Text>
           </TouchableOpacity>
         </View>
