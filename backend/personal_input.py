@@ -1,63 +1,94 @@
 from flask import Flask, request, jsonify
+from datetime import datetime, timedelta
 import sqlite3
 import os
-from datetime import datetime
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)  # 允许跨域请求
 
 BASE_DIR = os.path.dirname(__file__)
 DB_NAME = os.path.join(BASE_DIR, "foodapp.db")
 
-# ==== 数据库连接函数 ====
+# ====== DATABASE HELPERS ======
 def get_connection():
     return sqlite3.connect(DB_NAME)
 
-# ==== 初始化用户食物表 ====
 def init_db():
     conn = get_connection()
     cursor = conn.cursor()
+
+    # 用户食材表
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS user_food (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
         food_name TEXT,
         category TEXT,
-        date_added TEXT
+        date_added TEXT,
+        expire_days INTEGER
     )
     """)
+
+    # 食材分类表（可固定）
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS food_category (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE
+    )
+    """)
+
     conn.commit()
     conn.close()
 
-# ==== 添加用户食物 ====
-def add_user_food(user_id, food_name, category):
+def init_common_categories():
+    categories = [
+        "Fruit", "Vegetable", "Meat", "Seafood", "Dairy",
+        "Grain", "Nut", "Snack", "Beverage", "Condiment",
+        "Frozen Food", "Canned Food", "Spice", "Pastry"
+    ]
     conn = get_connection()
     cursor = conn.cursor()
-    today = datetime.now().strftime("%Y-%m-%d")
+    for cat in categories:
+        cursor.execute("INSERT OR IGNORE INTO food_category (name) VALUES (?)", (cat,))
+    conn.commit()
+    conn.close()
+
+# ====== ROUTES ======
+@app.route("/add_ingredient", methods=["POST"])
+def add_ingredient():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    name = data.get("name")
+    category = data.get("category")
+    exp_date = data.get("expiration_date")
+
+    if not all([user_id, name, category, exp_date]):
+        return jsonify({"error": "Missing fields"}), 400
+
+    # 检查类别是否存在
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT 1 FROM food_category WHERE name=?", (category,))
+    if not cursor.fetchone():
+        conn.close()
+        return jsonify({"error": "Invalid category"}), 400
+
+    # 计算 expire_days
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    expire_days = (datetime.strptime(exp_date, "%Y-%m-%d") - datetime.strptime(today_str, "%Y-%m-%d")).days
+
     cursor.execute(
-        "INSERT INTO user_food (user_id, food_name, category, date_added) VALUES (?, ?, ?, ?)",
-        (user_id, food_name, category, today)
+        "INSERT INTO user_food (user_id, food_name, category, date_added, expire_days) VALUES (?, ?, ?, ?, ?)",
+        (user_id, name, category, today_str, expire_days)
     )
     conn.commit()
     conn.close()
 
-# ==== Flask 路由 ====
-@app.route("/add-food", methods=["POST"])
-def route_add_food():
-    data = request.get_json()
-    user_id = data.get("user_id")
-    food_name = data.get("food_name")
-    category = data.get("category")
+    return jsonify({"success": True})
 
-    # 检查字段是否存在
-    if not (user_id and food_name and category):
-        return jsonify({"error": "Missing fields"}), 400
-
-    add_user_food(user_id, food_name, category)
-    return jsonify({"success": True, "food_name": food_name, "category": category})
-
-# ==== 获取用户食物（可选调试用） ====
-@app.route("/my-foods", methods=["GET"])
-def route_get_food():
+@app.route("/my_foods", methods=["GET"])
+def my_foods():
     user_id = request.args.get("user_id")
     if not user_id:
         return jsonify({"error": "Missing user_id"}), 400
@@ -65,16 +96,28 @@ def route_get_food():
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT food_name, category, date_added FROM user_food WHERE user_id=?",
+        "SELECT food_name, category, date_added, expire_days FROM user_food WHERE user_id=?", 
         (user_id,)
     )
     rows = cursor.fetchall()
     conn.close()
-    result = [{"food_name": r[0], "category": r[1], "date_added": r[2]} for r in rows]
+
+    result = []
+    for name, category, date_added, expire_days in rows:
+        expire_date = (datetime.strptime(date_added, "%Y-%m-%d") + timedelta(days=expire_days)).strftime("%Y-%m-%d")
+        result.append({
+            "name": name,
+            "category": category,
+            "expiration_date": expire_date
+        })
     return jsonify(result)
 
-# ==== 启动 ====
+# ====== RUN ======
 if __name__ == "__main__":
     init_db()
-    app.run(debug=True)
+    init_common_categories()
+    print("Database initialized with common categories.")
+    app.run(host="0.0.0.0", port=8080, debug=True)
+
+
 
