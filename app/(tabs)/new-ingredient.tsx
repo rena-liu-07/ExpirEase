@@ -140,8 +140,42 @@ export default function NewIngredientScreen() {
 
   const translateX = anim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 78.5], // adjust 120 to half the width of your toggle
+    outputRange: [0, 78.5],
   });
+
+  const handleAddIngredient = async () => {
+    if (!ingredientName || !category || !expirationDate) {
+      Alert.alert("Error", "Please fill in all fields.");
+      return;
+    }
+
+    try {
+  const response = await fetch("http://192.168.1.100:8080/add_ingredient", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          name: ingredientName,
+          category,
+          expiration_date: expirationDate,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        Alert.alert("Success", "Ingredient added!");
+        setIngredientName("");
+        setCategory("");
+        setExpirationDate("");
+      } else {
+        Alert.alert("Error", data.error || "Failed to add ingredient.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to connect to server.");
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -231,15 +265,12 @@ const TOGGLE_WIDTH = 157;
 const TOGGLE_HEIGHT = 32;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fcfcfa",
-    padding: 24,
-  },
+  container: { flex: 1, backgroundColor: "#fcfcfa", padding: 24 },
   heading: {
     margin: 18,
     marginBottom: 18,
     fontSize: 20,
+    fontWeight: "700",
     fontWeight: "700",
     color: "#1a1a1a",
     textAlign: "center",
@@ -276,13 +307,10 @@ const styles = StyleSheet.create({
     color: "#686666",
     fontSize: 14,
     fontWeight: "500",
+    fontWeight: "500",
   },
-  toggleTextActive: {
-    color: "#fff",
-  },
-  manualSection: {
-    marginTop: 16,
-  },
+  toggleTextActive: { color: "#fff" },
+  manualSection: { marginTop: 16 },
   input: {
     backgroundColor: "#fff",
     borderRadius: 8,

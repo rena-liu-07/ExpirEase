@@ -1,10 +1,13 @@
 import Feather from "@expo/vector-icons/Feather";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Dimensions,
   FlatList,
   ScrollView,
   StyleSheet,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
@@ -57,6 +60,7 @@ const handleDelete = async (name) => {
 };
 
 export default function IndexSeeAllScreen() {
+  const router = useRouter();
   const [groups, setGroups] = useState([]);
 
   useEffect(() => {
@@ -66,25 +70,36 @@ export default function IndexSeeAllScreen() {
   }, []);
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
-      {groups.map((group) => (
-        <View key={group.label} style={styles.ingredientsSection}>
-          <View style={{ flexDirection: "row", gap: 10 }}>
-            <Text style={styles.ingredientsSectionTitle}>{group.label}</Text>
+    <View>
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => router.replace("/(tabs)")}
+          style={styles.iconButton}
+        >
+          <MaterialIcons name="arrow-back-ios" size={22} color="black" />
+        </TouchableOpacity>
+        <Text style={styles.heading}>All Ingredients</Text>
+      </View>
+      <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
+        {groups.map((group) => (
+          <View key={group.label} style={styles.ingredientsSection}>
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <Text style={styles.ingredientsSectionTitle}>{group.label}</Text>
+            </View>
+            <View style={styles.ingredientsSectionLayout}>
+              <FlatList
+                data={group.items}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.id}
+                numColumns={2}
+                columnWrapperStyle={styles.row}
+                contentContainerStyle={styles.listContent}
+              />
+            </View>
           </View>
-          <View style={styles.ingredientsSectionLayout}>
-            <FlatList
-              data={group.items}
-              renderItem={renderItem}
-              keyExtractor={(item) => item.id}
-              numColumns={2}
-              columnWrapperStyle={styles.row}
-              contentContainerStyle={styles.listContent}
-            />
-          </View>
-        </View>
-      ))}
-    </ScrollView>
+        ))}
+      </ScrollView>
+    </View>
   );
 }
 
@@ -122,6 +137,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fcfcfa",
+  },
+
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 24,
+    padding: 16,
+    paddingTop: 8,
+  },
+  iconButton: {
+    padding: 8,
+    paddingLeft: 4,
+  },
+  heading: {
+    margin: 18,
+    marginBottom: 18,
+    fontSize: 20,
+    fontWeight: 700,
+    color: "#1a1a1a",
+    textAlign: "center",
   },
 
   listContent: {
