@@ -49,14 +49,6 @@ export default function RootLayout() {
                   }}
                 />
                 <Stack.Screen
-                  name="saved-recipes-all"
-                  options={{
-                    ...TransitionPresets.SlideFromRightIOS,
-                    gestureEnabled: true,
-                    headerShown: false,
-                  }}
-                />
-                <Stack.Screen
                   name="profile-settings"
                   options={{
                     ...TransitionPresets.SlideFromRightIOS,
