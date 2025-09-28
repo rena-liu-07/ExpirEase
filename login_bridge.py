@@ -3,9 +3,6 @@ from user_login import login_user, register_user
 from user_info import add_user_food, check_user_food_status, add_to_favorites, list_favorites
 
 def user_session(user_id):
-    """
-    已经登录成功的用户操作菜单
-    """
     while True:
         print("\n--- User Food Menu ---")
         print("1. Add Food")
@@ -56,9 +53,9 @@ def main():
         elif choice == "2":
             username = input("Username: ").strip()
             password = input("Password: ").strip()
-            user_id = login_user(username, password)  # 登录返回 user_id
+            user_id = login_user(username, password)  
             if user_id:
-                # 登录成功，进入用户食物系统
+                # successfully logged in
                 user_session(user_id)
             else:
                 print("Login failed. Try again.")

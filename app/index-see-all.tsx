@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { Card, Text } from "react-native-paper";
+import { API_ENDPOINTS } from "../config/api";
 
 const EXPIRY_GROUPS = [
   { label: "Expiring Today", test: (days: number) => days === 0 },
@@ -47,24 +48,48 @@ function groupIngredients(ingredients: any[]) {
   return groups.filter((g) => g.items.length > 0);
 }
 
-const [ingredients, setIngredients] = useState<any[]>([]);
-
-const handleDelete = async (name: string) => {
-  await fetch(
-    `http://YOUR_IP:5000/delete-ingredient?name=${encodeURIComponent(name)}`,
-    {
-      method: "DELETE",
-    }
-  );
-  setIngredients((prev) => prev.filter((item) => item.name !== name));
-};
-
 export default function IndexSeeAllScreen() {
   const router = useRouter();
-  const [groups, setGroups] = useState([]);
+  const [groups, setGroups] = useState<any[]>([]);
+  const [ingredients, setIngredients] = useState<any[]>([]);
+
+  const handleDelete = async (name: string) => {
+    await fetch(
+      `${API_ENDPOINTS.DELETE_INGREDIENT}?name=${encodeURIComponent(name)}`,
+      {
+        method: "DELETE",
+      }
+    );
+    setIngredients((prev) => prev.filter((item) => item.name !== name));
+  };
+
+  const renderItem = ({ item }: { item: any }) => (
+    <Swipeable
+      renderRightActions={() => (
+        <View
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            width: 80,
+            backgroundColor: "red",
+          }}
+        >
+          <Feather name="trash-2" size={24} color="white" />
+        </View>
+      )}
+      onSwipeableOpen={() => handleDelete(item.name)}
+    >
+      <Card style={styles.ingredientsCard} elevation={0}>
+        <Card.Content style={styles.cardTextContainer}>
+          <Text style={styles.cardCategory}>{item.category}</Text>
+          <Text style={styles.cardIngredient}>{item.name}</Text>
+        </Card.Content>
+      </Card>
+    </Swipeable>
+  );
 
   useEffect(() => {
-    fetch("http://localhost:8080/all-ingredients")
+    fetch(API_ENDPOINTS.ALL_INGREDIENTS)
       .then((res) => res.json())
       .then((data) => setGroups(groupIngredients(data as any[])));
   }, []);
@@ -102,31 +127,6 @@ export default function IndexSeeAllScreen() {
     </View>
   );
 }
-
-const renderItem = ({ item }: { item: any }) => (
-  <Swipeable
-    renderRightActions={() => (
-      <View
-        style={{
-          justifyContent: "center",
-          alignItems: "center",
-          width: 80,
-          backgroundColor: "red",
-        }}
-      >
-        <Feather name="trash-2" size={24} color="white" />
-      </View>
-    )}
-    onSwipeableOpen={() => handleDelete(item.name)}
-  >
-    <Card style={styles.ingredientsCard} elevation={0}>
-      <Card.Content style={styles.cardTextContainer}>
-        <Text style={styles.cardCategory}>{item.category}</Text>
-        <Text style={styles.cardIngredient}>{item.name}</Text>
-      </Card.Content>
-    </Card>
-  </Swipeable>
-);
 
 const { width } = Dimensions.get("window");
 const CARD_GAP = 16;
