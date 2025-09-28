@@ -1,6 +1,7 @@
 // import { Stack } from "expo-router";
 
 import { AuthProvider, useAuth } from "@/lib/auth-context";
+import { TransitionPresets } from "@react-navigation/stack";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -39,6 +40,20 @@ export default function RootLayout() {
             <RouteGuard>
               <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="index-see-all"
+                  options={{
+                    ...TransitionPresets.SlideFromRightIOS,
+                    gestureEnabled: true,
+                  }}
+                />
+                <Stack.Screen
+                  name="saved-recipes-all"
+                  options={{
+                    ...TransitionPresets.SlideFromRightIOS,
+                    gestureEnabled: true,
+                  }}
+                />
               </Stack>
             </RouteGuard>
           </SafeAreaProvider>

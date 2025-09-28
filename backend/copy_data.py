@@ -5,10 +5,17 @@ import os
 BASE_DIR = os.path.dirname(__file__)
 DB_NAME = os.path.join(BASE_DIR, "foodapp.db")
 
+<<<<<<< HEAD
+conn = sqlite3.connect(DB_NAME)
+cursor = conn.cursor()
+
+# ====== CREATE TABLES ======
+=======
 # ====== CREATE TABLES ======
 conn = sqlite3.connect(DB_NAME)
 cursor = conn.cursor()
 
+>>>>>>> 0f2e8d1cd45c0e1d9a38e13fe7f3419b4a5997d5
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS food (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -105,6 +112,11 @@ def init_common_categories():
     for cat in common_categories:
         add_category(cat)
 
+<<<<<<< HEAD
+# ====== RUN ONCE ======
+if __name__ == "__main__":
+    init_common_categories()
+=======
 def populate_example_foods():
     # 每个类别至少放一个示例
     example_foods = [
@@ -135,3 +147,4 @@ if __name__ == "__main__":
     init_common_categories()
     populate_example_foods()
     print("Database initialized and example foods added!")
+>>>>>>> 0f2e8d1cd45c0e1d9a38e13fe7f3419b4a5997d5

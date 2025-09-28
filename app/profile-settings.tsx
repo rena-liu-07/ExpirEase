@@ -1,17 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Avatar, Surface } from "react-native-paper";
-
-const expiredThisMonth = 7; // Example value, replace with real calculation
-const savedFromWaste = 12; // Example value, replace with real calculation
-const barData = [
-  { value: 3, label: "Apr" },
-  { value: 5, label: "May" },
-  { value: 2, label: "Jun" },
-  { value: 7, label: "Jul" },
-  { value: 4, label: "Aug" },
-  { value: 6, label: "Sep" },
-];
+import { Avatar } from "react-native-paper";
 
 export default function SustainabilityReportScreen() {
   return (
@@ -23,33 +12,13 @@ export default function SustainabilityReportScreen() {
       </View>
 
       {/* Expired Items Card */}
-      <Surface style={styles.cardCircle} elevation={0}>
+      {/* <Surface style={styles.cardCircle} elevation={0}>
         <Text style={styles.cardCircleNumber}>{expiredThisMonth}</Text>
         <View style={{ alignItems: "center" }}>
           <Text style={styles.cardSubtitle}>expired items</Text>
           <Text style={styles.cardSubtitle}>this month</Text>
         </View>
       </Surface>
-
-      {/* Bar Chart Card */}
-      {/* <Surface style={styles.chartCard} elevation={0}>
-        <Text style={styles.cardTitle}>Expired Items (Last 6 Months)</Text>
-        <BarChart
-          data={barData}
-          barWidth={28}
-          spacing={18}
-          roundedTop
-          frontColor="#b00020"
-          yAxisThickness={0}
-          xAxisColor="#e0e0e0"
-          yAxisTextStyle={{ color: "#686666", fontSize: 12 }}
-          xAxisLabelTextStyle={{ color: "#686666", fontSize: 12 }}
-          noOfSections={4}
-          maxValue={10}
-          height={160}
-          width={Dimensions.get("window").width - 48}
-        />
-      </Surface> */}
 
       <Surface style={styles.cardCircle} elevation={0}>
         <Text style={[styles.cardCircleNumber, { color: "#388e3c" }]}>
@@ -59,7 +28,7 @@ export default function SustainabilityReportScreen() {
           <Text style={styles.cardSubtitle}>items saved</Text>
           <Text style={styles.cardSubtitle}>from food waste</Text>
         </View>
-      </Surface>
+      </Surface> */}
     </View>
   );
 }
