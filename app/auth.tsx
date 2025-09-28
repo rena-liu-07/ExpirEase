@@ -38,13 +38,15 @@ export default function AuthScreen() {
         setError(error);
         return;
       }
+      // Successful signup, navigate to main app
+      router.replace("/(tabs)");
     } else {
       const error = await login(username, password);
       if (error) {
         setError(error);
         return;
       }
-
+      // Successful login, navigate to main app
       router.replace("/(tabs)");
     }
   };

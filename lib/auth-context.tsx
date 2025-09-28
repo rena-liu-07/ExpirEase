@@ -3,8 +3,9 @@ import React, { createContext, ReactNode, useContext, useState } from "react";
 // Define what our AuthContext holds
 interface AuthContextType {
   user: { id: number; username: string } | null;
-  signup: (username: string, email: string, password: string) => Promise<void>;
-  login: (username: string, password: string) => Promise<void>;
+  isLoadingUser: boolean;
+  signup: (username: string, email: string, password: string) => Promise<string | null>;
+  login: (username: string, password: string) => Promise<string | null>;
   logout: () => void;
 }
 
@@ -13,11 +14,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthContextType["user"]>(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(false);
 
   // 🚀 Signup with Flask API
-  const signup = async (username: string, email: string, password: string) => {
+  const signup = async (username: string, email: string, password: string): Promise<string | null> => {
+    setIsLoadingUser(true);
     try {
-      const res = await fetch("http://localhost:8080/signup", {
+      const res = await fetch("http://localhost:5000/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password }),
@@ -27,18 +30,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (res.ok) {
         setUser({ id: data.user_id, username });
+        return null; // Success, no error
       } else {
-        throw new Error(data.error || "Signup failed");
+        return data.error || "Signup failed";
       }
     } catch (err) {
       console.error("❌ Signup error:", err);
+      return "Network error. Please check your connection.";
+    } finally {
+      setIsLoadingUser(false);
     }
   };
 
   // 🚀 Login with Flask API
-  const login = async (username: string, password: string) => {
+  const login = async (username: string, password: string): Promise<string | null> => {
+    setIsLoadingUser(true);
     try {
-      const res = await fetch("http://localhost:8080/login", {
+      const res = await fetch("http://localhost:5000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -48,22 +56,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (res.ok) {
         setUser({ id: data.user_id, username });
+        return null; // Success, no error
       } else {
-        throw new Error(data.error || "Login failed");
+        return data.error || "Login failed";
       }
     } catch (err) {
       console.error("❌ Login error:", err);
+      return "Network error. Please check your connection.";
+    } finally {
+      setIsLoadingUser(false);
     }
   };
 
   // 🚀 Logout (clear state + call backend if needed)
   const logout = () => {
-    fetch("http://localhost:8080/logout", { method: "POST" }).catch(() => {});
+    fetch("http://localhost:5000/logout", { method: "POST" }).catch(() => {});
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, signup, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoadingUser, signup, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

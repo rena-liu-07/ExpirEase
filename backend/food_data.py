@@ -59,7 +59,7 @@ def add_to_catalog(name, default_expire_days):
     conn.commit()
     conn.close()
 
-def add_food(name, expire_days, nutrition=""):
+def add_food(name, expire_days, category):
     # Create a new connection for this thread to avoid threading issues
     local_conn = sqlite3.connect(DB_NAME)
     local_cursor = local_conn.cursor()
