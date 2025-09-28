@@ -5,9 +5,6 @@ import os
 BASE_DIR = os.path.dirname(__file__)
 DB_NAME = os.path.join(BASE_DIR, "foodapp.db")
 
-BASE_DIR = os.path.dirname(__file__)
-DB_NAME = os.path.join(BASE_DIR, "foodapp.db")
-
 conn = sqlite3.connect(DB_NAME)
 cursor = conn.cursor()
 
@@ -38,7 +35,9 @@ CREATE TABLE IF NOT EXISTS food_category (
 """)
 
 conn.commit()
+conn.close()
 
+# ====== FUNCTIONS ======
 def add_to_catalog(name, default_expire_days):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -85,3 +84,27 @@ def check_food_status():
         status = "expired" if days_left < 0 else f"{days_left} days left"
         result.append((name, status, category))
     return result
+
+def init_common_categories():
+    common_categories = [
+        "Fruit",
+        "Vegetable",
+        "Meat",
+        "Seafood",
+        "Dairy",
+        "Grain",
+        "Nut",
+        "Snack",
+        "Beverage",
+        "Condiment",
+        "Frozen Food",
+        "Canned Food",
+        "Spice",
+        "Pastry"
+    ]
+    for cat in common_categories:
+        add_category(cat)
+
+# ====== RUN ONCE ======
+if __name__ == "__main__":
+    init_common_categories()
