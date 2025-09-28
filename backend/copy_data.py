@@ -5,10 +5,10 @@ import os
 BASE_DIR = os.path.dirname(__file__)
 DB_NAME = os.path.join(BASE_DIR, "foodapp.db")
 
+# ====== CREATE TABLES ======
 conn = sqlite3.connect(DB_NAME)
 cursor = conn.cursor()
 
-# ====== CREATE TABLES ======
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS food (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -66,7 +66,6 @@ def add_category(name):
         "INSERT OR IGNORE INTO food_category (name) VALUES (?)",
         (name,)
     )
-    # close the connection
     conn.commit()
     conn.close()
 
@@ -106,6 +105,33 @@ def init_common_categories():
     for cat in common_categories:
         add_category(cat)
 
+def populate_example_foods():
+    # 每个类别至少放一个示例
+    example_foods = [
+        ("Apple", 7, "Fruit"),
+        ("Banana", 5, "Fruit"),
+        ("Carrot", 10, "Vegetable"),
+        ("Broccoli", 8, "Vegetable"),
+        ("Chicken Breast", 5, "Meat"),
+        ("Salmon", 4, "Seafood"),
+        ("Milk", 7, "Dairy"),
+        ("Cheese", 14, "Dairy"),
+        ("Bread", 3, "Grain"),
+        ("Rice", 180, "Grain"),
+        ("Almonds", 365, "Nut"),
+        ("Chocolate Bar", 180, "Snack"),
+        ("Coke", 365, "Beverage"),
+        ("Salt", 365, "Condiment"),
+        ("Frozen Peas", 180, "Frozen Food"),
+        ("Canned Corn", 365, "Canned Food"),
+        ("Black Pepper", 365, "Spice"),
+        ("Croissant", 3, "Pastry")
+    ]
+    for name, expire_days, category in example_foods:
+        add_food(name, expire_days, category)
+
 # ====== RUN ONCE ======
 if __name__ == "__main__":
     init_common_categories()
+    populate_example_foods()
+    print("Database initialized and example foods added!")
