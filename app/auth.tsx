@@ -14,7 +14,7 @@ export default function AuthScreen() {
   const theme = useTheme();
   const router = useRouter();
 
-  const { signIn, signUp } = useAuth();
+  const { login, signup } = useAuth();
 
   const handleAuth = async () => {
     if (
@@ -33,13 +33,13 @@ export default function AuthScreen() {
     setError(null);
 
     if (isSignUp) {
-      const error = await signUp(username, email, password);
+      const error = await signup(username, email, password);
       if (error) {
         setError(error);
         return;
       }
     } else {
-      const error = await signIn(username, password);
+      const error = await login(username, password);
       if (error) {
         setError(error);
         return;
