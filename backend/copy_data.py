@@ -5,7 +5,7 @@ import os
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # 允许前端跨域访问
+CORS(app)
 
 BASE_DIR = os.path.dirname(__file__)
 DB_NAME = os.path.join(BASE_DIR, "foodapp.db")
@@ -49,7 +49,6 @@ def add_ingredient():
     if not all([name, category, expiration_date]):
         return jsonify({"success": False, "error": "Missing fields"}), 400
 
-    # 计算过期天数
     today = datetime.now().strftime("%Y-%m-%d")
     expire_days = (datetime.strptime(expiration_date, "%Y-%m-%d") - datetime.strptime(today, "%Y-%m-%d")).days
 
