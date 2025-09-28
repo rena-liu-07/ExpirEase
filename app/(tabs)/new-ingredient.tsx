@@ -20,6 +20,12 @@ export default function NewIngredientScreen() {
   const [photos, setPhotos] = useState<string[]>([]);
   const [webFiles, setWebFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Form state variables
+  const [ingredientName, setIngredientName] = useState("");
+  const [category, setCategory] = useState("");
+  const [expirationDate, setExpirationDate] = useState("");
+  const [userId] = useState("1"); // Mock user ID
 
   // Permission for media library
   const requestMediaLibraryPermission = async () => {

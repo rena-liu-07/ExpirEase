@@ -1,9 +1,87 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from datetime import datetime, timedelta
+import sqlite3
+import os
 
 app = Flask(__name__)
 CORS(app)
+
+# Authentication database setup
+AUTH_DB_NAME = "users.db"
+
+def init_auth_db():
+    conn = sqlite3.connect(AUTH_DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            email TEXT UNIQUE,
+            password TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+init_auth_db()
+
+# Authentication endpoints
+@app.route("/signup", methods=["POST"])
+def signup():
+    data = request.get_json()
+    username = data.get("username")
+    email = data.get("email")
+    password = data.get("password")
+
+    if not username or not email or not password:
+        return jsonify({"error": "Missing fields"}), 400
+
+    try:
+        conn = sqlite3.connect(AUTH_DB_NAME)
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+            (username, email, password),
+        )
+        conn.commit()
+        user_id = cursor.lastrowid
+        conn.close()
+        return jsonify({"user_id": user_id}), 200
+    except sqlite3.IntegrityError:
+        return jsonify({"error": "Username or email already exists"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    username = data.get("username")
+    password = data.get("password")
+
+    if not username or not password:
+        return jsonify({"error": "Missing username or password"}), 400
+
+    try:
+        conn = sqlite3.connect(AUTH_DB_NAME)
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT id FROM users WHERE username = ? AND password = ?",
+            (username, password),
+        )
+        row = cursor.fetchone()
+        conn.close()
+
+        if row:
+            return jsonify({"user_id": row[0]}), 200
+        else:
+            return jsonify({"error": "Invalid username or password"}), 401
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    return jsonify({"message": "Logged out"}), 200
 
 @app.route('/generate-recipe', methods=['POST'])
 def generate_recipe_endpoint():
@@ -99,7 +177,7 @@ def delete_ingredient():
         return jsonify({'error': 'No ingredient name provided'}), 400
     
     try:
-        from food_data import delete_food
+        from backend.food_data import delete_food
         delete_food(name)
         return jsonify({'success': True})
     except Exception as e:
@@ -111,7 +189,7 @@ def delete_ingredient():
 @app.route('/add_ingredient', methods=['POST'])
 def add_ingredient():
     try:
-        from food_data import add_food
+        from backend.food_data import add_food
         
         data = request.get_json()
         name = data.get('name')
@@ -134,4 +212,4 @@ def add_ingredient():
 
 if __name__ == '__main__':
     print("Starting Flask server on port 5000...")
-    app.run(host='127.0.0.1', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=True)
