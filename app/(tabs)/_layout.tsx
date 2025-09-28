@@ -14,11 +14,11 @@ export default function TabsLayout() {
           tabBarShowLabel: false,
           tabBarIcon: ({ focused }) => {
             return focused ? (
-              <MaterialCommunityIcons name="home" size={24} color="black" />
+              <MaterialCommunityIcons name="home" size={26} color="black" />
             ) : (
               <MaterialCommunityIcons
                 name="home-outline"
-                size={24}
+                size={26}
                 color="black"
               />
             );
@@ -46,9 +46,9 @@ export default function TabsLayout() {
           tabBarShowLabel: false,
           tabBarIcon: ({ focused }) => {
             return focused ? (
-              <Entypo name="circle-with-plus" size={23} color="black" />
+              <Entypo name="circle-with-plus" size={24} color="black" />
             ) : (
-              <Entypo name="plus" size={23} color="black" />
+              <Entypo name="plus" size={24} color="black" />
             );
           },
         }}

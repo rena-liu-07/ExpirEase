@@ -1,9 +1,9 @@
 import os
-import re
 from dotenv import load_dotenv
 from PIL import Image
 import google.generativeai as genai
-from datetime import datetime, timedelta
+from datetime import datetime
+from dotenv import load_dotenv
 from shelf_life_api import estimate_expiration
 from food_data import add_food, check_food_status
 
@@ -12,91 +12,19 @@ load_dotenv()
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
 # Initialize Gemini client
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-2.5-flash')
-
-
-def parse_expiration(exp_str: str):
-    """
-    Robustly parse expiration information from strings like:
-      - "2025-10-10"
-      - "Expires 2025-10-10 (in 5 days)"
-      - "10/10/2025"
-      - "in 5 days", "5 days"
-      - "2 weeks", "3 months"
-      - "5"  (interpreted as days but only if reasonable)
-    Returns a datetime object or None if parsing fails.
-    """
-    if not exp_str:
-        return None
-
-    s = exp_str.strip().lower()
-
-    # 1) Find ISO-like date YYYY-MM-DD or YYYY/MM/DD anywhere in the string
-    iso_match = re.search(r'(\d{4}[-/]\d{1,2}[-/]\d{1,2})', s)
-    if iso_match:
-        date_str = iso_match.group(1).replace('/', '-')
-        try:
-            return datetime.strptime(date_str, "%Y-%m-%d")
-        except Exception:
-            pass
-
-    # 2) Find MM/DD/YYYY or MM-DD-YYYY
-    md_match = re.search(r'(\d{1,2}[-/]\d{1,2}[-/]\d{4})', s)
-    if md_match:
-        date_str = md_match.group(1)
-        for fmt in ("%m-%d-%Y", "%m/%d/%Y"):
-            try:
-                return datetime.strptime(date_str, fmt)
-            except Exception:
-                pass
-
-    # 3) Relative times: days, weeks, months
-    # days
-    days_match = re.search(r'(\d+)\s*(?:day|days|d)\b', s)
-    if days_match:
-        days = int(days_match.group(1))
-        return datetime.today() + timedelta(days=days)
-
-    # weeks
-    weeks_match = re.search(r'(\d+)\s*(?:week|weeks|w)\b', s)
-    if weeks_match:
-        weeks = int(weeks_match.group(1))
-        return datetime.today() + timedelta(weeks=weeks)
-
-    # months (approximate a month as 30 days)
-    months_match = re.search(r'(\d+)\s*(?:month|months)\b', s)
-    if months_match:
-        months = int(months_match.group(1))
-        return datetime.today() + timedelta(days=30 * months)
-
-    # 4) If the whole string is a simple integer (e.g. "5"), treat as days
-    num_full = re.fullmatch(r'\d+', s)
-    if num_full:
-        n = int(s)
-        # guard against interpreting years (e.g. "2025") as days
-        if n <= 365:
-            return datetime.today() + timedelta(days=n)
-        # otherwise treat as invalid (None) so fallback logic will be used
-        return None
-
-    # 5) Last resort: look for any reasonable small integer anywhere (but avoid years)
-    # This avoids catching a year from a date like 2025-10-10 because we've already matched dates above.
-    loose_num = re.search(r'(\d+)', s)
-    if loose_num:
-        n = int(loose_num.group(1))
-        if 0 < n <= 365:
-            return datetime.today() + timedelta(days=n)
-
-    return None
-
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
+    model = genai.GenerativeModel('gemini-2.5-flash')
+else:
+    model = None
+    print("Warning: No GEMINI_API_KEY found. Image analysis will not work.")
 
 def analyze_image(image_path):
-    # Open image safely
+    # Open image and convert to bytes
     im = Image.open(image_path)
     today_str = datetime.today().strftime('%Y-%m-%d')
-
-    # Prompt Gemini
+    print(f"Today's date: {today_str}")
+    # Send prompt and image to Gemini for analysis
     prompt = {
         "text": (
             f"Today's date is {today_str}. "

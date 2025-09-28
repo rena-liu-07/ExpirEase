@@ -37,7 +37,7 @@ export default function PhotoUploader() {
     if (!hasPermission) return;
 
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Only allow image capture
+      mediaTypes: ImagePicker.MediaType.Image, // Only allow images
       quality: 1, // Highest quality
     });
 
@@ -55,7 +55,7 @@ export default function PhotoUploader() {
     if (!hasPermission) return;
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Only allow images
+      mediaTypes: ImagePicker.MediaType.Image, // Only allow images
       allowsMultipleSelection: true, // Enable selecting multiple images
       selectionLimit: 10, // Limit to 10 images
       quality: 1, // Highest quality
@@ -65,8 +65,6 @@ export default function PhotoUploader() {
     if (!result.canceled && result.assets?.length) {
       setPhotos([...photos, ...result.assets.map(asset => asset.uri)]);
     }
-
-    sendToFlask();
   };
 
   // Function to remove a photo from the state
@@ -75,12 +73,35 @@ export default function PhotoUploader() {
   };
 
   const sendToFlask = async () => {
-  await fetch('http://10.36.184.181:8080/photo_scanner', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ paths: photos }),
-        }); 
-    };
+    try {
+      if (photos.length === 0) {
+        Alert.alert('Error', 'No photo to upload');
+        return;
+      }
+      const photoUri = photos[0]; // Only send the first photo for now
+      const formData = new FormData();
+      formData.append('image', {
+        uri: photoUri,
+        type: 'image/jpeg',
+        name: photoUri.split('/').pop() || 'photo.jpg',
+      } as any); // React Native FormData workaround
+
+      const response = await fetch('http://10.36.184.181:5000/photo_scanner', {
+        method: 'POST',
+        body: formData,
+        // Do NOT set Content-Type header!
+      });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error('Network response was not ok: ' + text);
+      }
+      const data = await response.json();
+      Alert.alert('Scan Complete', JSON.stringify(data));
+    } catch (error) {
+      console.error('Error sending photo:', error);
+      Alert.alert('Error', String((error as any)?.message || error));
+    }
+  };
 
   // Render the UI
   return (
