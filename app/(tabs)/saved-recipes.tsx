@@ -45,6 +45,45 @@ export default function SavedRecipesScreen() {
                 />
               </View>
             </View>
+          </View>
+          <Swiper
+            style={styles.swiperContainer}
+            showsButtons={false}
+            showsPagination={false}
+            loop={false}
+          >
+            <Card elevation={0} style={styles.ingredientsCard}>
+              <View style={styles.cardImageContainer}>
+                <Image
+                  source={require("../../assets/images/icon.png")}
+                  style={styles.cardImage}
+                  resizeMode="cover"
+                />
+              </View>
+              <View style={styles.cardTitleContainer}>
+                <Text style={styles.cardName}>Sheppard's Pie</Text>
+              </View>
+            </Card>
+          </Swiper>
+        </View>
+        <View style={styles.ingredientsSection}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <Text style={styles.heading}>Favorites</Text>
+              <View style={styles.arrowCircle}>
+                <MaterialIcons
+                  name="arrow-forward-ios"
+                  size={15}
+                  color="black"
+                />
+              </View>
+            </View>
             <Button
               mode="text"
               style={{ marginRight: 18 }}
@@ -60,13 +99,16 @@ export default function SavedRecipesScreen() {
             loop={false}
           >
             <Card elevation={0} style={styles.ingredientsCard}>
-              <Card.Content style={styles.cardTextContainer}>
+              <View style={styles.cardImageContainer}>
                 <Image
                   source={require("../../assets/images/icon.png")}
-                  style={{ width: 100, height: 100 }}
+                  style={styles.cardImage}
+                  resizeMode="cover"
                 />
+              </View>
+              <View style={styles.cardTitleContainer}>
                 <Text style={styles.cardName}>Sheppard's Pie</Text>
-              </Card.Content>
+              </View>
             </Card>
           </Swiper>
         </View>
@@ -136,18 +178,30 @@ const styles = StyleSheet.create({
     marginRight: 16,
     borderRadius: 8,
     backgroundColor: "#f7f2fa",
-    height: 61,
     width: 164,
+    height: 200,
+    overflow: "hidden",
+    padding: 0,
   },
-
-  cardTextContainer: {
+  cardImageContainer: {
+    height: 150, // 3/4 of 200
+    width: "100%",
+    backgroundColor: "#e0e0e0",
+  },
+  cardImage: {
+    width: "100%",
+    height: "100%",
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+  },
+  cardTitleContainer: {
+    height: 50, // 1/4 of 200
+    justifyContent: "flex-start",
     paddingLeft: 10,
-    alignItems: "flex-end",
-    justifyContent: "flex-end",
+    paddingTop: 5,
+    backgroundColor: "#f7f2fa",
   },
-
   cardName: {
-    paddingBottom: 2,
     fontSize: 14,
     color: "#1a1a1a",
   },
