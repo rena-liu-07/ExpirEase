@@ -1,59 +1,95 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
 import sqlite3
-import hashlib
-import os
-from datetime import datetime
 
 app = Flask(__name__)
-CORS(app)
-DB_NAME = os.path.join(os.path.dirname(__file__), "foodapp.db")
 
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
+DB_NAME = "users.db"
 
-@app.route("/login", methods=["POST"])
-def login():
-    data = request.json
-    username = data.get("username")
-    password = data.get("password")
-    if not username or not password:
-        return jsonify({"error": "Missing fields"}), 400
+# 初始化数据库
+def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    password_hash = hash_password(password)
-    cursor.execute("SELECT id FROM user WHERE username=? AND password=?", (username, password_hash))
-    row = cursor.fetchone()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            email TEXT UNIQUE,
+            password TEXT
+        )
+    """)
+    conn.commit()
     conn.close()
-    if row:
-        return jsonify({"user_id": row[0]})
-    else:
-        return jsonify({"error": "Invalid credentials"}), 401
 
-@app.route("/signup", methods=["POST"])
+init_db()
+
+
+# 首页测试
+@app.route("/", methods=["GET"])
+def home():
+    return "✅ Flask is running! Try /signup or /login"
+
+
+# 注册
+@app.route("/signup", methods=["GET", "POST"])
 def signup():
-    data = request.json
+    if request.method == "GET":
+        return "This is the signup page. Please send POST request with username, email, password."
+
+    data = request.get_json()
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
+
     if not username or not email or not password:
         return jsonify({"error": "Missing fields"}), 400
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    password_hash = hash_password(password)
+
     try:
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO user (username, email, password, created_at) VALUES (?, ?, ?, ?)",
-            (username, email, password_hash, created_at)
+            "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+            (username, email, password),
         )
         conn.commit()
         user_id = cursor.lastrowid
         conn.close()
-        return jsonify({"user_id": user_id})
+        return jsonify({"user_id": user_id}), 200
     except sqlite3.IntegrityError:
-        conn.close()
-        return jsonify({"error": "Username already exists"}), 409
+        return jsonify({"error": "Username or email already exists"}), 400
+
+
+# 登录
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "GET":
+        return "This is the login page. Please send POST request with username, password."
+
+    data = request.get_json()
+    username = data.get("username")
+    password = data.get("password")
+
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id FROM users WHERE username = ? AND password = ?",
+        (username, password),
+    )
+    row = cursor.fetchone()
+    conn.close()
+
+    if row:
+        return jsonify({"user_id": row[0]}), 200
+    else:
+        return jsonify({"error": "Invalid username or password"}), 401
+
+
+@app.route("/logout", methods=["GET", "POST"])
+def logout():
+    if request.method == "GET":
+        return "This is the logout page. Just send POST to logout."
+
+    return jsonify({"message": "Logged out"}), 200
+
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, port=5000)
