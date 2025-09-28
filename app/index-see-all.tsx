@@ -42,7 +42,9 @@ function groupIngredients(ingredients: any[]) {
 
   for (const ing of ingredients) {
     const exp = new Date(ing.expiration);
-    const days = Math.floor((exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const days = Math.floor(
+      (exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    );
     for (const group of groups) {
       if (group.test(days) && !used.has(ing.name)) {
         group.items.push(ing);
@@ -67,7 +69,9 @@ export default function IndexSeeAllScreen() {
           method: "DELETE",
         }
       );
-      setIngredients((prev: any[]) => prev.filter((item: any) => item.name !== name));
+      setIngredients((prev: any[]) =>
+        prev.filter((item: any) => item.name !== name)
+      );
     } catch (error) {
       console.error("Failed to delete ingredient:", error);
     }
@@ -117,7 +121,7 @@ export default function IndexSeeAllScreen() {
   }, []);
 
   return (
-    <View>
+    <View style={{ backgroundColor: "#fcfcfa" }}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.replace("/(tabs)")}
@@ -165,9 +169,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 24,
-    padding: 16,
+    paddingLeft: 16,
+    paddingRight: 16,
     paddingTop: 8,
+    backgroundColor: "transparent",
   },
   iconButton: {
     padding: 8,
@@ -206,10 +211,11 @@ const styles = StyleSheet.create({
 
   ingredientsSectionTitle: {
     margin: 18,
+    marginTop: 8,
     marginBottom: 0,
     fontSize: 16,
     fontWeight: 600,
-    color: "#1a1a1a",
+    color: "#eb5757",
   },
 
   ingredientsSectionLayout: {
@@ -218,10 +224,17 @@ const styles = StyleSheet.create({
 
   ingredientsCard: {
     borderRadius: 8,
-    backgroundColor: "#f7f2fa",
-    height: 61,
+    height: 72,
     width: CARD_WIDTH,
     marginBottom: 0,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    elevation: 3,
+    shadowColor: "#686666",
+    shadowOpacity: 0.5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 3,
   },
 
   cardTextContainer: {
