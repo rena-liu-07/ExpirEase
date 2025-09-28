@@ -56,7 +56,7 @@ def login_user(username, password):
     conn.close()
     if row:
         print(f"User '{username}' logged in.")
-        return row[0]  # 返回 user_id
+        return row[0]  # return user_id
     else:
         print("Login failed.")
         return None
