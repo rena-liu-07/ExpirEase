@@ -1,22 +1,78 @@
-import Feather from "@expo/vector-icons/Feather";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useState } from "react";
+import React, { useMemo } from "react";
 import {
   FlatList,
   Image,
   ScrollView,
   StyleSheet,
+  Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
-import { Card, Text } from "react-native-paper";
+import { Card } from "react-native-paper";
 import Swiper from "react-native-swiper";
 
-export default function SavedRecipesScreen() {
-  const [search, setSearch] = useState("");
+// Helper to chunk array into pairs
+function chunkPairs(arr) {
+  const out = [];
+  for (let i = 0; i < arr.length; i += 2) {
+    out.push([arr[i], arr[i + 1] ?? null]);
+  }
+  return out;
+}
 
-  // Mock data for favorite recipes
-  const favoriteRecipes = [
+const renderRecipeCard = ({ item }) => {
+  if (!item) {
+    return null;
+  }
+
+  return (
+    <Card elevation={0} style={styles.ingredientsCard}>
+      <View style={styles.cardImageContainer}>
+        <Image
+          source={
+            typeof item.image === "string" ? { uri: item.image } : item.image
+          }
+          style={styles.cardImage}
+          resizeMode="cover"
+        />
+      </View>
+      <View style={styles.cardTitleContainer}>
+        <Text style={styles.cardName} numberOfLines={2}>
+          {item.title}
+        </Text>
+      </View>
+    </Card>
+  );
+};
+
+const renderFavoriteItem = ({ item }) => {
+  if (!item) {
+    return null;
+  }
+
+  return (
+    <Card elevation={0} style={styles.ingredientsCard}>
+      <View style={styles.cardImageContainer}>
+        <Image
+          source={
+            typeof item.image === "string" ? { uri: item.image } : item.image
+          }
+          style={styles.cardImage}
+          resizeMode="cover"
+        />
+      </View>
+      <View style={styles.cardTitleContainer}>
+        <Text style={styles.cardName} numberOfLines={2}>
+          {item.title}
+        </Text>
+      </View>
+    </Card>
+  );
+};
+
+export default function SavedRecipesScreen({
+  favoriteRecipes = [
     {
       id: "1",
       title: "Classic Lasagna",
@@ -37,10 +93,10 @@ export default function SavedRecipesScreen() {
       title: "Berry Smoothie",
       image: require("../../assets/images/splash-icon.png"),
     },
-  ];
+  ],
 
   // Mock data for recent recipes (swiper)
-  const recentRecipes = [
+  recentRecipes = [
     {
       id: "a",
       title: "Sheppard's Pie",
@@ -61,107 +117,90 @@ export default function SavedRecipesScreen() {
       title: "Fruit Parfait",
       image: require("../../assets/images/splash-icon.png"),
     },
-  ];
+  ],
+}) {
+  const { width: W } = useWindowDimensions();
 
-  const renderFavoriteItem = ({ item }) => (
-    <Card elevation={0} style={styles.ingredientsCard}>
-      <View style={styles.cardImageContainer}>
-        <Image
-          source={item.image}
-          style={styles.cardImage}
-          resizeMode="cover"
-        />
-      </View>
-      <View style={styles.cardTitleContainer}>
-        <Text style={styles.cardName} numberOfLines={2}>
-          {item.title}
-        </Text>
-      </View>
-    </Card>
-  );
+  // spacing constants
+  const SIDE_PADDING = 16; // 16px to screen edge (left and right)
+  const GAP = 16; // gap between two cards
 
-  const renderRecipeCard = (item) => (
-    <Card elevation={0} style={styles.ingredientsCard}>
-      <View style={styles.cardImageContainer}>
-        <Image
-          source={item.image}
-          style={styles.cardImage}
-          resizeMode="cover"
-        />
-      </View>
-      <View style={styles.cardTitleContainer}>
-        <Text style={styles.cardName} numberOfLines={2}>
-          {item.title}
-        </Text>
-      </View>
-    </Card>
-  );
+  // compute widths so: left edge 16, right edge 16, gap 16 between cards
+  // cardWidth = (W - 2*SIDE_PADDING - GAP) / 2
+  const cardWidth = Math.max(120, (W - SIDE_PADDING * 2 - GAP) / 2); // min cap just in case
+
+  const slides = useMemo(() => chunkPairs(recentRecipes), [recentRecipes]);
+
+  // wrapper for consistent width
+  const FavoriteCardWrapper = ({ item }) => {
+    return (
+      <View style={{ width: cardWidth }}>{renderFavoriteItem({ item })}</View>
+    );
+  };
 
   return (
     <View style={styles.container}>
       {/* Search */}
       <View style={styles.searchContainer}>
-        <Feather
-          name="search"
-          size={24}
-          color="#828282"
-          style={styles.searchIcon}
-        />
+        {/* replace with your Feather icon */}
+        {/* <Feather name="search" size={24} color="#828282" style={styles.searchIcon} /> */}
         <TextInput
           placeholder="Search"
           underlineColorAndroid="transparent"
           style={styles.searchInput}
-          value={search}
-          onChangeText={setSearch}
+          // value={search}
+          // onChangeText={setSearch}
           returnKeyType="search"
         />
       </View>
 
-      {/* Scrollable Content */}
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Recent Section */}
+        {/* Recent section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
-            >
-              <Text style={styles.heading}>Recent</Text>
-              <View style={styles.arrowCircle}>
-                <MaterialIcons
-                  name="arrow-forward-ios"
-                  size={15}
-                  color="black"
-                />
-              </View>
-            </View>
+            <Text style={styles.heading}>Recent</Text>
+            <View style={styles.arrowCircle}>{/* arrow icon */}</View>
           </View>
 
-          <Swiper
-            style={styles.swiperContainer}
-            showsButtons={false}
-            showsPagination={false}
-            loop={false}
-          >
-            {recentRecipes.map((item) => (
-              <View key={item.id} style={styles.swiperSlide}>
-                {renderRecipeCard(item)}
-              </View>
-            ))}
-          </Swiper>
+          <View style={{ height: 220 }}>
+            <Swiper showsButtons={false} showsPagination={false} loop={false}>
+              {slides.map((pair, idx) => (
+                <View
+                  key={idx}
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  {pair.map((item, i) => (
+                    <View key={i} style={{ width: cardWidth }}>
+                      {renderRecipeCard({ item })}
+                    </View>
+                  ))}
+                </View>
+              ))}
+            </Swiper>
+          </View>
         </View>
 
-        {/* Favorites Section */}
+        {/* Favorites section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.heading}>Favorites</Text>
           </View>
+
           <FlatList
             data={favoriteRecipes}
-            renderItem={renderFavoriteItem}
+            renderItem={({ item }) => <FavoriteCardWrapper item={item} />}
             keyExtractor={(item) => item.id}
             numColumns={2}
-            columnWrapperStyle={styles.row}
-            contentContainerStyle={styles.listContent}
+            // ensure two columns align with same side padding & gap
+            columnWrapperStyle={{
+              justifyContent: "space-between",
+              paddingHorizontal: SIDE_PADDING,
+              marginBottom: 16,
+            }}
+            contentContainerStyle={{ paddingTop: 0, paddingBottom: 24 }}
             scrollEnabled={false}
           />
         </View>
@@ -178,7 +217,8 @@ const styles = StyleSheet.create({
 
   // Search
   searchContainer: {
-    margin: 18,
+    marginHorizontal: 16, // use 16 to match card side padding
+    marginTop: 16,
     marginBottom: 24,
     paddingLeft: 8,
     flexDirection: "row",
@@ -192,7 +232,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     paddingVertical: 8,
-    paddingRight: 18,
+    paddingRight: 16,
     fontSize: 18,
     color: "#828282",
     backgroundColor: "transparent",
@@ -200,19 +240,19 @@ const styles = StyleSheet.create({
 
   // Sections
   section: {
-    marginBottom: 18, // spacing between sections
+    marginBottom: 18,
   },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 18,
-    marginBottom: 18,
+    paddingHorizontal: 16,
+    marginBottom: 12,
     marginTop: 8,
   },
   heading: {
     fontSize: 24,
-    fontWeight: 700,
+    fontWeight: "700",
     color: "#1a1a1a",
   },
 
@@ -225,19 +265,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  // Swiper
-  swiperContainer: {
-    height: 200,
+  // swiper slide (wrapper that Swiper expects)
+  slide: {
+    flex: 1,
+    justifyContent: "center",
   },
-  swiperSlide: {
-    paddingHorizontal: 18,
+  slideRow: {
+    flexDirection: "row",
+    justifyContent: "space-between", // creates the GAP between the two card wrappers
+    alignItems: "flex-start",
   },
 
-  // Cards
+  // Cards (NO fixed width; width is '100%' so parent wrapper controls final width)
   ingredientsCard: {
     borderRadius: 8,
     backgroundColor: "#f7f2fa",
-    width: 164,
+    width: "100%", // let parent wrapper set actual width
     height: 150,
     overflow: "hidden",
   },
@@ -262,15 +305,5 @@ const styles = StyleSheet.create({
   cardName: {
     fontSize: 16,
     color: "#1a1a1a",
-  },
-
-  // Favorites Grid
-  listContent: {
-    paddingHorizontal: 18,
-  },
-  row: {
-    flex: 1,
-    justifyContent: "space-between",
-    marginBottom: 18,
   },
 });
