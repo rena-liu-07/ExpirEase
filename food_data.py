@@ -38,6 +38,17 @@ conn.commit()
 conn.close()
 
 # ====== FUNCTIONS ======
+
+# Print all ingredients in the database
+def print_all_ingredients():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, category, date_added, expire_days FROM food")
+    rows = cursor.fetchall()
+    conn.close()
+    print("\n--- All Ingredients in Database ---")
+    for name, category, date_added, expire_days in rows:
+        print(f"Name: {name}, Category: {category}, Date Added: {date_added}, Expire Days: {expire_days}")
 def add_to_catalog(name, default_expire_days):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -86,6 +97,16 @@ def check_food_status():
     return result
 
 def init_common_categories():
+        # New function to print all ingredients
+        def print_all_ingredients():
+            conn = sqlite3.connect(DB_NAME)
+            cursor = conn.cursor()
+            cursor.execute("SELECT name, category, date_added, expire_days FROM food")
+            rows = cursor.fetchall()
+            conn.close()
+            print("\n--- All Ingredients in Database ---")
+            for name, category, date_added, expire_days in rows:
+                print(f"Name: {name}, Category: {category}, Date Added: {date_added}, Expire Days: {expire_days}")
     common_categories = [
         "Fruit",
         "Vegetable",
