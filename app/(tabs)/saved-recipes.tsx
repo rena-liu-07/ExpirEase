@@ -14,16 +14,23 @@ import {
 import { Card } from "react-native-paper";
 import Swiper from "react-native-swiper";
 
+// Recipe interface
+interface Recipe {
+  id: string;
+  title: string;
+  image: any; // can be require() or string
+}
+
 // Helper to chunk array into pairs
-function chunkPairs(arr) {
-  const out = [];
+function chunkPairs<T>(arr: T[]): (T | null)[][] {
+  const out: (T | null)[][] = [];
   for (let i = 0; i < arr.length; i += 2) {
     out.push([arr[i], arr[i + 1] ?? null]);
   }
   return out;
 }
 
-const renderRecipeCard = ({ item }) => {
+const renderRecipeCard = ({ item }: { item: Recipe | null }) => {
   if (!item) {
     return null;
   }
@@ -48,7 +55,7 @@ const renderRecipeCard = ({ item }) => {
   );
 };
 
-const renderFavoriteItem = ({ item }) => {
+const renderFavoriteItem = ({ item }: { item: Recipe | null }) => {
   if (!item) {
     return null;
   }
@@ -72,6 +79,11 @@ const renderFavoriteItem = ({ item }) => {
     </Card>
   );
 };
+
+interface SavedRecipesScreenProps {
+  favoriteRecipes?: Recipe[];
+  recentRecipes?: Recipe[];
+}
 
 export default function SavedRecipesScreen({
   favoriteRecipes = [
@@ -120,7 +132,7 @@ export default function SavedRecipesScreen({
       image: require("../../assets/images/splash-icon.png"),
     },
   ],
-}) {
+}: SavedRecipesScreenProps) {
   const { width: W } = useWindowDimensions();
 
   const SIDE_PADDING = 16; // padding on left/right edges
@@ -132,7 +144,7 @@ export default function SavedRecipesScreen({
   const slides = useMemo(() => chunkPairs(recentRecipes), [recentRecipes]);
 
   // wrapper for consistent width
-  const FavoriteCardWrapper = ({ item }) => {
+  const FavoriteCardWrapper = ({ item }: { item: Recipe }) => {
     return (
       <View style={{ width: cardWidth }}>{renderFavoriteItem({ item })}</View>
     );

@@ -20,6 +20,12 @@ export default function NewIngredientScreen() {
   const [photos, setPhotos] = useState<string[]>([]);
   const [webFiles, setWebFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Form state variables
+  const [ingredientName, setIngredientName] = useState("");
+  const [category, setCategory] = useState("");
+  const [expirationDate, setExpirationDate] = useState("");
+  const [userId] = useState("1"); // Mock user ID
 
   // Permission for media library
   const requestMediaLibraryPermission = async () => {
@@ -271,7 +277,6 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     fontSize: 20,
     fontWeight: "700",
-    fontWeight: "700",
     color: "#1a1a1a",
     textAlign: "center",
   },
@@ -306,7 +311,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#686666",
     fontSize: 14,
-    fontWeight: "500",
     fontWeight: "500",
   },
   toggleTextActive: { color: "#fff" },
