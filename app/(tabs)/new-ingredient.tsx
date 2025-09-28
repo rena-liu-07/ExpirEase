@@ -41,7 +41,7 @@ export default function NewIngredientScreen() {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/add_ingredient", {
+  const response = await fetch("http://192.168.1.100:8080/add_ingredient", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
