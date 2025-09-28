@@ -1,11 +1,13 @@
 import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Image, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Button, Card, Text } from "react-native-paper";
 import Swiper from "react-native-swiper";
 
 export default function SavedRecipesScreen() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
 
   return (
@@ -87,7 +89,7 @@ export default function SavedRecipesScreen() {
             <Button
               mode="text"
               style={{ marginRight: 18 }}
-              // onPress={() => router.push("/index-see-all")}
+              onPress={() => router.push("/saved-recipes-all")}
             >
               See All
             </Button>
