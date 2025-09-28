@@ -1,3 +1,5 @@
+import Feather from "@expo/vector-icons/Feather";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React, { useMemo } from "react";
 import {
   FlatList,
@@ -121,13 +123,11 @@ export default function SavedRecipesScreen({
 }) {
   const { width: W } = useWindowDimensions();
 
-  // spacing constants
-  const SIDE_PADDING = 16; // 16px to screen edge (left and right)
-  const GAP = 16; // gap between two cards
+  const SIDE_PADDING = 16; // padding on left/right edges
+  const GAP = 16; // gap between cards
 
-  // compute widths so: left edge 16, right edge 16, gap 16 between cards
-  // cardWidth = (W - 2*SIDE_PADDING - GAP) / 2
-  const cardWidth = Math.max(120, (W - SIDE_PADDING * 2 - GAP) / 2); // min cap just in case
+  // Compute card width so that 2 cards + gap + edge paddings fit the screen
+  const cardWidth = (W - SIDE_PADDING * 2 - GAP) / 2;
 
   const slides = useMemo(() => chunkPairs(recentRecipes), [recentRecipes]);
 
@@ -142,14 +142,16 @@ export default function SavedRecipesScreen({
     <View style={styles.container}>
       {/* Search */}
       <View style={styles.searchContainer}>
-        {/* replace with your Feather icon */}
-        {/* <Feather name="search" size={24} color="#828282" style={styles.searchIcon} /> */}
+        <Feather
+          name="search"
+          size={24}
+          color="#828282"
+          style={styles.searchIcon}
+        />
         <TextInput
           placeholder="Search"
           underlineColorAndroid="transparent"
           style={styles.searchInput}
-          // value={search}
-          // onChangeText={setSearch}
           returnKeyType="search"
         />
       </View>
@@ -159,10 +161,12 @@ export default function SavedRecipesScreen({
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.heading}>Recent</Text>
-            <View style={styles.arrowCircle}>{/* arrow icon */}</View>
+            <View style={styles.arrowCircle}>
+              <MaterialIcons name="arrow-forward-ios" size={13} color="black" />
+            </View>
           </View>
 
-          <View style={{ height: 220 }}>
+          <View style={{ height: 220, paddingHorizontal: SIDE_PADDING }}>
             <Swiper showsButtons={false} showsPagination={false} loop={false}>
               {slides.map((pair, idx) => (
                 <View
