@@ -1,13 +1,11 @@
 import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Image, ScrollView, StyleSheet, TextInput, View } from "react-native";
-import { Button, Card, Text } from "react-native-paper";
+import { Card, Text } from "react-native-paper";
 import Swiper from "react-native-swiper";
 
 export default function SavedRecipesScreen() {
-  const router = useRouter();
   const [search, setSearch] = useState("");
 
   return (
@@ -76,23 +74,7 @@ export default function SavedRecipesScreen() {
               alignItems: "center",
             }}
           >
-            <View style={{ flexDirection: "row", gap: 12 }}>
-              <Text style={styles.heading}>Favorites</Text>
-              <View style={styles.arrowCircle}>
-                <MaterialIcons
-                  name="arrow-forward-ios"
-                  size={15}
-                  color="black"
-                />
-              </View>
-            </View>
-            <Button
-              mode="text"
-              style={{ marginRight: 18 }}
-              onPress={() => router.push("/saved-recipes-all")}
-            >
-              See All
-            </Button>
+            <Text style={styles.heading}>Favorites</Text>
           </View>
           <Swiper
             style={styles.swiperContainer}

@@ -45,6 +45,7 @@ export default function RootLayout() {
                   options={{
                     ...TransitionPresets.SlideFromRightIOS,
                     gestureEnabled: true,
+                    headerShown: false,
                   }}
                 />
                 <Stack.Screen
@@ -52,6 +53,15 @@ export default function RootLayout() {
                   options={{
                     ...TransitionPresets.SlideFromRightIOS,
                     gestureEnabled: true,
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen
+                  name="profile-settings"
+                  options={{
+                    ...TransitionPresets.SlideFromRightIOS,
+                    gestureEnabled: true,
+                    headerShown: false,
                   }}
                 />
               </Stack>

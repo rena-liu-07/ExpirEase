@@ -66,6 +66,17 @@ export default function IndexSeeAllScreen() {
   }, []);
 
   return (
+    <View>
+    <View style={styles.header}>
+            <TouchableOpacity
+              onPress={() => router.replace("/(tabs)/sustainability-report")}
+              style={styles.iconButton}
+            >
+              <MaterialIcons name="arrow-back-ios" size={22} color="black" />
+            </TouchableOpacity>
+            <Text style={styles.heading}>Profile Settings</Text>
+            <Avatar.Icon size={40} icon="account" style={styles.avatar} />
+          </View>
     <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
       {groups.map((group) => (
         <View key={group.label} style={styles.ingredientsSection}>
@@ -85,6 +96,7 @@ export default function IndexSeeAllScreen() {
         </View>
       ))}
     </ScrollView>
+    
   );
 }
 

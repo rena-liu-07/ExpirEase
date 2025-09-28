@@ -1,34 +1,31 @@
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useRouter } from "expo-router";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { Avatar } from "react-native-paper";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Avatar, Button } from "react-native-paper";
 
 export default function SustainabilityReportScreen() {
+  const router = useRouter();
   return (
     <View style={styles.container}>
-      {/* Title and Profile Icon */}
-      <View style={styles.headerRow}>
-        <Text style={styles.heading}>Sustainability Report</Text>
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => router.replace("/(tabs)/sustainability-report")}
+          style={styles.iconButton}
+        >
+          <MaterialIcons name="arrow-back-ios" size={22} color="black" />
+        </TouchableOpacity>
+        <Text style={styles.heading}>Profile Settings</Text>
         <Avatar.Icon size={40} icon="account" style={styles.avatar} />
       </View>
 
-      {/* Expired Items Card */}
-      {/* <Surface style={styles.cardCircle} elevation={0}>
-        <Text style={styles.cardCircleNumber}>{expiredThisMonth}</Text>
-        <View style={{ alignItems: "center" }}>
-          <Text style={styles.cardSubtitle}>expired items</Text>
-          <Text style={styles.cardSubtitle}>this month</Text>
-        </View>
-      </Surface>
-
-      <Surface style={styles.cardCircle} elevation={0}>
-        <Text style={[styles.cardCircleNumber, { color: "#388e3c" }]}>
-          {savedFromWaste}
-        </Text>
-        <View style={{ alignItems: "center" }}>
-          <Text style={styles.cardSubtitle}>items saved</Text>
-          <Text style={styles.cardSubtitle}>from food waste</Text>
-        </View>
-      </Surface> */}
+      <View>
+        <Text>Username: </Text>
+        <Text>Email: </Text>
+        <Text>Password: </Text>
+        <Button>Log Out</Button>
+        <Button>Delete Account</Button>
+      </View>
     </View>
   );
 }
@@ -37,14 +34,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fcfcfa",
-    padding: 16,
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingTop: 8,
   },
-  headerRow: {
+  header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 24,
-    marginTop: 8,
+  },
+  iconButton: {
+    padding: 8,
+    paddingLeft: 4,
   },
   heading: {
     margin: 18,
