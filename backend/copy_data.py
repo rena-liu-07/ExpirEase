@@ -66,6 +66,7 @@ def add_category(name):
         "INSERT OR IGNORE INTO food_category (name) VALUES (?)",
         (name,)
     )
+    # close the connection
     conn.commit()
     conn.close()
 
