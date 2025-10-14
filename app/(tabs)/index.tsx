@@ -1,10 +1,11 @@
 import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Button, Card, Text } from "react-native-paper";
 import Swiper from "react-native-swiper";
+import { API_ENDPOINTS, apiCall } from "../../config/api";
 
 const EXPIRY_GROUPS = [
   { label: "Expiring Today", test: (days: number) => days === 0 },
@@ -47,8 +48,14 @@ export default function Index() {
   const [search, setSearch] = useState("");
   const [groups, setGroups] = useState<any[]>([]);
 
+  useEffect(() => {
+    apiCall(API_ENDPOINTS.ALL_INGREDIENTS)
+      .then((data) => setGroups(groupIngredients(data as any[])))
+      .catch((error) => console.error("Failed to load ingredients:", error));
+  }, []);
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { flex: 1, minHeight: 0 }]}>
       <View style={styles.searchContainer}>
         <Feather
           name="search"
@@ -72,7 +79,11 @@ export default function Index() {
           }}
         />
       </View>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
         <View style={styles.headingSection}>
           <Text style={styles.heading}>Expiring Soon</Text>
           <Button
@@ -101,7 +112,6 @@ export default function Index() {
                 />
               </View>
             </View>
-
             <Swiper
               style={styles.swiperContainer}
               showsButtons={false}
