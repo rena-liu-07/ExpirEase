@@ -1,10 +1,10 @@
+import Slider from "@/components/Slider";
 import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, TextInput, View } from "react-native";
-import { Button, Card, Text } from "react-native-paper";
-import Swiper from "react-native-swiper";
+import { Button, Text } from "react-native-paper";
 import { API_ENDPOINTS, apiCall } from "../../config/api";
 
 const EXPIRY_GROUPS = [
@@ -112,25 +112,7 @@ export default function Index() {
                 />
               </View>
             </View>
-            <Swiper
-              style={styles.swiperContainer}
-              showsButtons={false}
-              showsPagination={false}
-              loop={false}
-            >
-              {group.items.map((item: any) => (
-                <Card
-                  key={item.name}
-                  elevation={0}
-                  style={styles.ingredientsCard}
-                >
-                  <Card.Content style={styles.cardTextContainer}>
-                    <Text style={styles.cardCategory}>{item.category}</Text>
-                    <Text style={styles.cardIngredient}>{item.name}</Text>
-                  </Card.Content>
-                </Card>
-              ))}
-            </Swiper>
+            <Slider data={group.items} />
           </View>
         ))}
       </ScrollView>
@@ -204,42 +186,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 600,
     color: "#eb5757",
-  },
-
-  swiperContainer: {
-    // gap: 10,
-    height: 86,
-  },
-
-  ingredientsCard: {
-    margin: 8,
-    marginBottom: 26,
-    marginRight: 16,
-    borderRadius: 8,
-    height: 72,
-    width: 164,
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    elevation: 3,
-    shadowColor: "#686666",
-    shadowOpacity: 0.5,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 3,
-  },
-
-  cardTextContainer: {
-    paddingLeft: 10,
-  },
-
-  cardCategory: {
-    fontSize: 12,
-    color: "#686666",
-  },
-
-  cardIngredient: {
-    paddingBottom: 2,
-    fontSize: 14,
-    color: "#1a1a1a",
   },
 });
