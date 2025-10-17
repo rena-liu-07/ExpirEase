@@ -1,91 +1,110 @@
-import React, { createContext, ReactNode, useContext, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
-// Define what our AuthContext holds
-interface AuthContextType {
-  user: { id: number; username: string } | null;
-  isLoadingUser: boolean;
-  signup: (username: string, email: string, password: string) => Promise<string | null>;
+const API_URL = "http://localhost:5000"; // ✅ Flask server base URL
+
+type User = {
+  id: number;
+  username: string;
+};
+
+type AuthContextType = {
+  user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
   login: (username: string, password: string) => Promise<string | null>;
-  logout: () => void;
-}
+  signup: (
+    username: string,
+    email: string,
+    password: string
+  ) => Promise<string | null>;
+  logout: () => Promise<void>;
+};
 
-// Create empty context
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  setUser: () => {},
+  login: async () => null,
+  signup: async () => null,
+  logout: async () => {},
+});
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<AuthContextType["user"]>(null);
-  const [isLoadingUser, setIsLoadingUser] = useState(false);
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
 
-  // 🚀 Signup with Flask API
-  const signup = async (username: string, email: string, password: string): Promise<string | null> => {
-    setIsLoadingUser(true);
+  // ✅ Restore user session on app start
+  useEffect(() => {
+    const loadUser = async () => {
+      const storedId = await AsyncStorage.getItem("user_id");
+      const storedUsername = await AsyncStorage.getItem("username");
+      if (storedId && storedUsername) {
+        setUser({ id: Number(storedId), username: storedUsername });
+      }
+    };
+    loadUser();
+  }, []);
+
+  // ✅ Signup
+  const signup = async (username: string, email: string, password: string) => {
     try {
-      const res = await fetch("http://localhost:5000/signup", {
+      const res = await fetch(`${API_URL}/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password }),
       });
 
-      const data = await res.json() as any;
+      const data = await res.json();
 
-      if (res.ok) {
-        setUser({ id: data.user_id, username });
-        return null; // Success, no error
-      } else {
-        return data.error || "Signup failed";
-      }
+      if (!res.ok) return data.error || "Signup failed";
+
+      // Save user session
+      await AsyncStorage.setItem("user_id", data.user_id.toString());
+      await AsyncStorage.setItem("username", username);
+      setUser({ id: data.user_id, username });
+
+      return null; // no error
     } catch (err) {
-      console.error("❌ Signup error:", err);
-      return "Network error. Please check your connection.";
-    } finally {
-      setIsLoadingUser(false);
+      console.error("Signup error:", err);
+      return "Signup failed due to network error";
     }
   };
 
-  // 🚀 Login with Flask API
-  const login = async (username: string, password: string): Promise<string | null> => {
-    setIsLoadingUser(true);
+  // ✅ Login
+  const login = async (username: string, password: string) => {
     try {
-      const res = await fetch("http://localhost:5000/login", {
+      const res = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await res.json() as any;
+      const data = await res.json();
 
-      if (res.ok) {
-        setUser({ id: data.user_id, username });
-        return null; // Success, no error
-      } else {
-        return data.error || "Login failed";
-      }
+      if (!res.ok) return data.error || "Login failed";
+
+      // Save session
+      await AsyncStorage.setItem("user_id", data.user_id.toString());
+      await AsyncStorage.setItem("username", username);
+      setUser({ id: data.user_id, username });
+
+      return null;
     } catch (err) {
-      console.error("❌ Login error:", err);
-      return "Network error. Please check your connection.";
-    } finally {
-      setIsLoadingUser(false);
+      console.error("Login error:", err);
+      return "Login failed due to network error";
     }
   };
 
-  // 🚀 Logout (clear state + call backend if needed)
-  const logout = () => {
-    fetch("http://localhost:5000/logout", { method: "POST" }).catch(() => {});
+  // ✅ Logout
+  const logout = async () => {
+    await AsyncStorage.removeItem("user_id");
+    await AsyncStorage.removeItem("username");
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoadingUser, signup, login, logout }}>
+    <AuthContext.Provider value={{ user, setUser, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Hook to use AuthContext easily
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used inside an AuthProvider");
-  }
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);

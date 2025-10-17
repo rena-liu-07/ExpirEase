@@ -30,7 +30,6 @@ const EXPIRY_GROUPS = [
 ];
 
 function groupIngredients(ingredients: any[]) {
-  // Safety check to ensure ingredients is an array
   if (!Array.isArray(ingredients)) {
     console.warn("groupIngredients: ingredients is not an array:", ingredients);
     return [];
@@ -80,14 +79,7 @@ export default function IndexSeeAllScreen() {
   const renderItem = ({ item }: { item: any }) => (
     <Swipeable
       renderRightActions={() => (
-        <View
-          style={{
-            justifyContent: "center",
-            alignItems: "center",
-            width: 80,
-            backgroundColor: "red",
-          }}
-        >
+        <View style={styles.deleteSlide}>
           <Feather name="trash-2" size={24} color="white" />
         </View>
       )}
@@ -227,7 +219,7 @@ const styles = StyleSheet.create({
     height: 72,
     width: CARD_WIDTH,
     marginBottom: 0,
-    backgroundColor: "transparent",
+    backgroundColor: "#fffffe",
     borderWidth: 1,
     borderColor: "#e0e0e0",
     elevation: 3,
@@ -250,5 +242,13 @@ const styles = StyleSheet.create({
     paddingBottom: 2,
     fontSize: 14,
     color: "#1a1a1a",
+  },
+
+  deleteSlide: {
+    justifyContent: "center",
+    alignItems: "flex-end",
+    paddingRight: 20,
+    width: CARD_WIDTH,
+    backgroundColor: "#bd0400",
   },
 });

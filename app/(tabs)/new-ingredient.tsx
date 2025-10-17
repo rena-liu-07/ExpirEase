@@ -13,19 +13,23 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { API_ENDPOINTS, apiCall } from "../../config/api";
+import { useAuth } from "../../lib/auth-context";
 
 export default function NewIngredientScreen() {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const [ingredients, setIngredients] = useState<any[]>([]);
   const [mode, setMode] = useState("manual");
   const anim = useRef(new Animated.Value(0)).current;
   const [photos, setPhotos] = useState<string[]>([]);
   const [webFiles, setWebFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   // Form state variables
   const [ingredientName, setIngredientName] = useState("");
   const [category, setCategory] = useState("");
   const [expirationDate, setExpirationDate] = useState("");
-  const [userId] = useState("1"); // Mock user ID
 
   // Permission for media library
   const requestMediaLibraryPermission = async () => {
@@ -152,37 +156,30 @@ export default function NewIngredientScreen() {
     outputRange: [0, 78.5],
   });
 
-  const handleAddIngredient = async () => {
-    if (!ingredientName || !category || !expirationDate) {
-      Alert.alert("Error", "Please fill in all fields.");
+  const handleAddIngredient = async (newIngredient: {
+    name: string;
+    category: string;
+    expiration: string;
+  }) => {
+    if (!user?.id) {
+      console.error("User not logged in");
       return;
     }
 
     try {
-      const response = await fetch("http://192.168.1.100:8080/add_ingredient", {
+      const addedIngredient = await apiCall(API_ENDPOINTS.ADD_INGREDIENT, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
-          user_id: userId,
-          name: ingredientName,
-          category,
-          expiration_date: expirationDate,
+          name: newIngredient.name,
+          category: newIngredient.category,
+          expiration_date: newIngredient.expiration,
         }),
       });
 
-      const data = await response.json();
-      if (response.ok && data.success) {
-        Alert.alert("Success", "Ingredient added!");
-        setIngredientName("");
-        setCategory("");
-        setExpirationDate("");
-      } else {
-        Alert.alert("Error", data.error || "Failed to add ingredient.");
-      }
+      // ✅ Update UI immediately
+      setIngredients((prev: any[]) => [...prev, addedIngredient]);
     } catch (error) {
-      Alert.alert("Error", "Failed to connect to server.");
+      console.error("Failed to add ingredient:", error);
     }
   };
 
@@ -218,13 +215,37 @@ export default function NewIngredientScreen() {
       </TouchableOpacity>
       {mode === "manual" ? (
         <View style={styles.manualSection}>
-          <TextInput style={styles.input} placeholder="Ingredient Name" />
-          <TextInput style={styles.input} placeholder="Category" />
           <TextInput
+            placeholder="Ingredient Name"
+            underlineColorAndroid="transparent"
+            value={ingredientName}
+            onChangeText={setIngredientName}
             style={styles.input}
-            placeholder="Expiration Date (YYYY-MM-DD)"
           />
-          <TouchableOpacity style={styles.buttonContainer}>
+          <TextInput
+            placeholder="Category"
+            underlineColorAndroid="transparent"
+            value={category}
+            onChangeText={setCategory}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Expiration Date (YYYY-MM-DD)"
+            underlineColorAndroid="transparent"
+            value={expirationDate}
+            onChangeText={setExpirationDate}
+            style={styles.input}
+          />
+          <TouchableOpacity
+            onPress={() =>
+              handleAddIngredient({
+                name: ingredientName,
+                category: category,
+                expiration: expirationDate,
+              })
+            }
+            style={styles.buttonContainer}
+          >
             <Text style={styles.buttonText}>Add Ingredient</Text>
           </TouchableOpacity>
         </View>
@@ -324,10 +345,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
-  toggleTextActive: { color: "#fff" },
-  manualSection: { marginTop: 16 },
+  toggleTextActive: { color: "#fffffe" },
+  manualSection: { marginTop: 16, justifyContent: "center" },
   input: {
-    backgroundColor: "#fff",
+    backgroundColor: "#fffffe",
     borderRadius: 8,
     padding: 12,
     fontSize: 16,

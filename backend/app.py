@@ -148,6 +148,47 @@ def delete_ingredient():
     conn.close()
     return jsonify({"success": True})
 
+from datetime import datetime
+
+@app.route("/add-ingredient", methods=["POST"])
+def add_ingredient():
+    data = request.get_json()
+    print("DEBUG - raw request data:", data)
+
+    name = data.get("name")
+    category = data.get("category")
+    expiration_date = data.get("expiration_date") or data.get("expiration")
+
+    if not all([name, category, expiration_date]):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        expire_days = (datetime.strptime(expiration_date, "%Y-%m-%d") - datetime.now()).days
+    except Exception as e:
+        print("Date conversion error:", e)
+        return jsonify({"error": "Invalid date format"}), 400
+
+    date_added = datetime.now().strftime("%Y-%m-%d")
+
+    try:
+        conn = sqlite3.connect(FOOD_DB)
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO food (name, category, expire_days, date_added)
+            VALUES (?, ?, ?, ?)
+        """, (name, category, expire_days, date_added))
+        conn.commit()
+        conn.close()
+        return jsonify({
+            "success": True,
+            "name": name,
+            "category": category,
+            "expire_days": expire_days,
+            "date_added": date_added,
+        })
+    except Exception as e:
+        print("DB Error:", e)
+        return jsonify({"error": str(e)}), 500
 
 # ========================
 # 🍳 RECIPE ROUTES

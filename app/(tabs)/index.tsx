@@ -132,8 +132,13 @@ const styles = StyleSheet.create({
     paddingLeft: 8,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#e7e7e7",
+    backgroundColor: "#fffffe",
     borderRadius: 8,
+    borderWidth: 2,
+    borderColor: "#e7e7e7",
+    // shadowColor: "#686666",
+    // shadowOpacity: 1,
+    // shadowRadius: 3,
   },
 
   searchIcon: {

@@ -1,0 +1,10 @@
+POST http://127.0.0.1:5000/add-ingredient
+Content-Type: application/json
+
+{
+  "name": "Milk",
+  "expiration_date": "2025-10-20",
+  "category": "Dairy",
+  "user_id": 1
+}
+

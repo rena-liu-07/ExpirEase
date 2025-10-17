@@ -29,7 +29,7 @@ export const API_ENDPOINTS = {
   GENERATE_RECIPE: `${API_BASE_URL}/generate-recipe`,
   ALL_INGREDIENTS: `${API_BASE_URL}/all-ingredients`,
   SEARCH: `${API_BASE_URL}/search`,
-  ADD_INGREDIENT: `${API_BASE_URL}/add_ingredient`,
+  ADD_INGREDIENT: `${API_BASE_URL}/add-ingredient`,
   DELETE_INGREDIENT: `${API_BASE_URL}/delete-ingredient`,
 } as const;
 
