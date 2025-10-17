@@ -136,9 +136,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 2,
     borderColor: "#e7e7e7",
-    // shadowColor: "#686666",
-    // shadowOpacity: 1,
-    // shadowRadius: 3,
   },
 
   searchIcon: {

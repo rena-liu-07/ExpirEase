@@ -104,11 +104,14 @@ export default function GenerateRecipeScreen() {
         setRecipes((prev) => [newRecipe, ...prev]);
         Alert.alert("Success!", "New recipe generated successfully!");
       } else {
-        Alert.alert("Error", data.error || "Failed to generate recipe from database");
+        Alert.alert(
+          "Error",
+          data.error || "Failed to generate recipe from database"
+        );
       }
     } catch (error) {
       Alert.alert(
-        "Connection Error", 
+        "Connection Error",
         "Unable to connect to the recipe database. Please ensure the backend server is running."
       );
       console.error("Recipe generation error:", error);
@@ -116,8 +119,6 @@ export default function GenerateRecipeScreen() {
       setLoading(false);
     }
   };
-
-
 
   const resetOptions = () => {
     setRecipeSize("medium");
@@ -134,51 +135,12 @@ export default function GenerateRecipeScreen() {
           <Text style={styles.headerTitle}>Generate Recipe</Text>
         </View>
 
-        {/* Expiring Ingredients Alert */}
-        {expiringIngredients.length > 0 && (
-          <Card style={styles.expiringCard}>
-            <Card.Content>
-              <View style={styles.expiringHeader}>
-                <MaterialIcons name="warning" size={24} color="#FF9800" />
-                <Text style={styles.expiringTitle}>
-                  Ingredients Expiring Soon
-                </Text>
-              </View>
-              <Text style={styles.expiringSubtitle}>
-                Use these ingredients to reduce food waste:
-              </Text>
-              <View style={styles.chipContainer}>
-                {expiringIngredients.slice(0, 6).map((ingredient, index) => (
-                  <Chip
-                    key={index}
-                    mode="outlined"
-                    style={[
-                      styles.expiringChip,
-                      ingredient.days_until_expiry <= 1 && styles.urgentChip,
-                    ]}
-                    textStyle={[
-                      ingredient.days_until_expiry <= 1 && styles.urgentText,
-                    ]}
-                  >
-                    {ingredient.name} ({ingredient.days_until_expiry}d)
-                  </Chip>
-                ))}
-              </View>
-              {expiringIngredients.length > 6 && (
-                <Text style={styles.moreIngredientsText}>
-                  +{expiringIngredients.length - 6} more ingredients
-                </Text>
-              )}
-            </Card.Content>
-          </Card>
-        )}
-
         {/* Current Settings Display */}
-        <Card style={styles.settingsCard}>
+        <Card style={styles.settingsCard} elevation={0}>
           <Card.Content>
             <Text style={styles.settingsTitle}>Recipe Preferences</Text>
             <View style={styles.settingRow}>
-              <Text style={styles.settingLabel}>Size:</Text>
+              <Text style={styles.settingLabel}>Serving Size:</Text>
               <Text style={styles.settingValue}>
                 {recipeSize.charAt(0).toUpperCase() + recipeSize.slice(1)}
               </Text>
@@ -196,7 +158,9 @@ export default function GenerateRecipeScreen() {
               </View>
             )}
             <View style={styles.settingRow}>
-              <Text style={styles.settingLabel}>Prioritize Expiring:</Text>
+              <Text style={styles.settingLabel}>
+                Prioritize Expiring Ingredients:
+              </Text>
               <Text style={styles.settingValue}>
                 {prioritizeExpiring ? "Yes" : "No"}
               </Text>
@@ -210,8 +174,7 @@ export default function GenerateRecipeScreen() {
             mode="outlined"
             onPress={() => setShowOptionsDialog(true)}
             style={styles.optionsButton}
-            icon="tune"
-            labelStyle={{ color: "#1a1a1a" }}
+            labelStyle={{ fontSize: 16, color: "#eb5757" }}
           >
             Customize Options
           </Button>
@@ -222,7 +185,7 @@ export default function GenerateRecipeScreen() {
             loading={loading}
             disabled={loading}
             style={styles.generateButton}
-            icon="chef-hat"
+            labelStyle={{ fontSize: 16, color: "#fffffe" }}
           >
             {loading ? "Generating..." : "Generate Recipe"}
           </Button>
@@ -295,7 +258,7 @@ export default function GenerateRecipeScreen() {
       </ScrollView>
 
       {/* Options Dialog */}
-      <Portal>
+      <Portal accent-color={"#fcfcfa"}>
         <Dialog
           visible={showOptionsDialog}
           onDismiss={() => setShowOptionsDialog(false)}
@@ -305,7 +268,7 @@ export default function GenerateRecipeScreen() {
           <Dialog.Content>
             <ScrollView>
               {/* Recipe Size */}
-              <Text style={styles.dialogSectionTitle}>Recipe Size</Text>
+              <Text style={styles.dialogSectionTitle}>Serving Size</Text>
               <RadioButton.Group
                 onValueChange={setRecipeSize}
                 value={recipeSize}
@@ -437,48 +400,6 @@ const styles: any = StyleSheet.create({
     color: "#1a1a1a",
     textAlign: "center",
   },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-    marginTop: 5,
-  },
-  expiringCard: {
-    margin: 10,
-    backgroundColor: "#FFF3E0",
-  },
-  expiringHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  expiringTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginLeft: 8,
-    color: "#E65100",
-  },
-  expiringSubtitle: {
-    fontSize: 14,
-    color: "#BF360C",
-    marginBottom: 10,
-  },
-  chipContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-  },
-  expiringChip: {
-    marginBottom: 4,
-  },
-  urgentChip: {
-    backgroundColor: "#FFEBEE",
-    borderColor: "#F44336",
-  },
-  urgentText: {
-    color: "#D32F2F",
-    fontWeight: "bold",
-  },
   moreIngredientsText: {
     fontSize: 12,
     color: "#666",
@@ -486,8 +407,12 @@ const styles: any = StyleSheet.create({
     fontStyle: "italic",
   },
   settingsCard: {
-    margin: 10,
-    backgroundColor: "#fcfcfa",
+    margin: 8,
+    marginRight: 16,
+    borderRadius: 8,
+    backgroundColor: "#fffffe",
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
   },
   settingsTitle: {
     fontSize: 16,
@@ -506,19 +431,24 @@ const styles: any = StyleSheet.create({
   settingValue: {
     fontSize: 14,
     fontWeight: "500",
+    color: "#eb5757",
   },
   buttonContainer: {
     padding: 10,
     gap: 10,
   },
   optionsButton: {
+    marginBottom: 8,
+    backgroundColor: "#fffffe",
+    borderRadius: 8,
+    borderWidth: 1,
     borderColor: "#e0e0e0",
-    color: "#eb5757",
-    backgroundColor: "transparent",
   },
   generateButton: {
     backgroundColor: "#eb5757",
     marginTop: 8,
+    borderRadius: 8,
+    padding: 2,
   },
   dialogSectionTitle: {
     fontSize: 16,

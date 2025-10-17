@@ -23,13 +23,8 @@ const styles = StyleSheet.create({
     height: 72,
     width: 164,
     backgroundColor: "#fffffe",
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    elevation: 3,
-    shadowColor: "#686666",
-    shadowOpacity: 0.5,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 3,
+    borderWidth: 2,
+    borderColor: "#e7e7e7",
   },
 
   cardTextContainer: {

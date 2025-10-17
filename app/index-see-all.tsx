@@ -215,18 +215,13 @@ const styles = StyleSheet.create({
   },
 
   ingredientsCard: {
-    borderRadius: 8,
     height: 72,
     width: CARD_WIDTH,
     marginBottom: 0,
     backgroundColor: "#fffffe",
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    elevation: 3,
-    shadowColor: "#686666",
-    shadowOpacity: 0.5,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 3,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: "#e7e7e7",
   },
 
   cardTextContainer: {
@@ -250,5 +245,6 @@ const styles = StyleSheet.create({
     paddingRight: 20,
     width: CARD_WIDTH,
     backgroundColor: "#bd0400",
+    borderRadius: 8,
   },
 });

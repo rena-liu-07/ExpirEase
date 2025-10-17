@@ -345,8 +345,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
-  toggleTextActive: { color: "#fffffe" },
-  manualSection: { marginTop: 16, justifyContent: "center" },
+  toggleTextActive: {
+    color: "#fffffe",
+  },
+  manualSection: {
+    marginTop: 16,
+    justifyContent: "center",
+  },
   input: {
     backgroundColor: "#fffffe",
     borderRadius: 8,
