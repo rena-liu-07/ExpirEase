@@ -18,8 +18,7 @@ import { useAuth } from "../../lib/auth-context";
 
 export default function NewIngredientScreen() {
   const { user } = useAuth();
-  const userId = user?.id ?? null;
-  const [ingredients, setIngredients] = useState<any[]>([]);
+  const [ingredientAdded, setIngredientAdded] = useState(false);
   const [mode, setMode] = useState("manual");
   const anim = useRef(new Animated.Value(0)).current;
   const [photos, setPhotos] = useState<string[]>([]);
@@ -175,9 +174,6 @@ export default function NewIngredientScreen() {
           expiration_date: newIngredient.expiration,
         }),
       });
-
-      // ✅ Update UI immediately
-      setIngredients((prev: any[]) => [...prev, addedIngredient]);
     } catch (error) {
       console.error("Failed to add ingredient:", error);
     }
@@ -219,7 +215,10 @@ export default function NewIngredientScreen() {
             placeholder="Ingredient Name"
             underlineColorAndroid="transparent"
             value={ingredientName}
-            onChangeText={setIngredientName}
+            onChangeText={(text) => {
+              setIngredientName(text);
+              setIngredientAdded(false);
+            }}
             style={styles.input}
           />
           <TextInput
@@ -237,17 +236,24 @@ export default function NewIngredientScreen() {
             style={styles.input}
           />
           <TouchableOpacity
-            onPress={() =>
+            onPress={() => {
               handleAddIngredient({
                 name: ingredientName,
                 category: category,
                 expiration: expirationDate,
-              })
-            }
+              });
+              setIngredientAdded(true);
+              setIngredientName("");
+              setCategory("");
+              setExpirationDate("");
+            }}
             style={styles.buttonContainer}
           >
             <Text style={styles.buttonText}>Add Ingredient</Text>
           </TouchableOpacity>
+          {ingredientAdded ? (
+            <Text style={styles.ingredientAddedText}>Ingredient Added!</Text>
+          ) : null}
         </View>
       ) : (
         <View style={styles.photoTabRectangle}>
@@ -477,5 +483,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     letterSpacing: 1,
+  },
+  ingredientAddedText: {
+    color: "#1a1a1a",
+    fontSize: 16,
+    fontWeight: "600",
+    letterSpacing: 1,
+    alignSelf: "center",
   },
 });

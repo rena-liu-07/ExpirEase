@@ -58,7 +58,6 @@ function groupIngredients(ingredients: any[]) {
 export default function IndexSeeAllScreen() {
   const router = useRouter();
   const [groups, setGroups] = useState<any[]>([]);
-  const [ingredients, setIngredients] = useState<any[]>([]);
 
   const handleDelete = async (name: string) => {
     try {
@@ -68,7 +67,7 @@ export default function IndexSeeAllScreen() {
           method: "DELETE",
         }
       );
-      setIngredients((prev: any[]) =>
+      setGroups((prev: any[]) =>
         prev.filter((item: any) => item.name !== name)
       );
     } catch (error) {
@@ -100,11 +99,9 @@ export default function IndexSeeAllScreen() {
         const data = await apiCall(API_ENDPOINTS.ALL_INGREDIENTS);
         // Ensure data is an array before processing
         const ingredientsArray = Array.isArray(data) ? data : [];
-        setIngredients(ingredientsArray);
         setGroups(groupIngredients(ingredientsArray));
       } catch (error) {
         console.error("Failed to load ingredients:", error);
-        setIngredients([]);
         setGroups([]);
       }
     };

@@ -37,7 +37,12 @@ export default function RootLayout() {
         <PaperProvider>
           <SafeAreaProvider>
             <RouteGuard>
-              <Stack screenOptions={{ headerShown: false }}>
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  contentStyle: { backgroundColor: "#fcfcfa" },
+                }}
+              >
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen
                   name="index-see-all"

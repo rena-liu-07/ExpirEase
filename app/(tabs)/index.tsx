@@ -179,8 +179,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
-    // borderWidth: 1,
-    // borderColor: "#eb5757",
   },
 
   ingredientsSectionTitle: {
