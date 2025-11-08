@@ -1,39 +1,6 @@
 import os
 import sqlite3
-from dotenv import load_dotenv
-import google.generativeai as genai
 from datetime import datetime, timedelta
-
-# Load environment variables from .env file
-load_dotenv()
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-
-# Initialize AI model if API key is available
-model = None
-if GEMINI_API_KEY and GEMINI_API_KEY != 'your_gemini_api_key_here':
-    try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        from google.generativeai.types import HarmCategory, HarmBlockThreshold
-        
-        # Use gemini-2.5-flash (same as photo scanner - proven to work)
-        model = genai.GenerativeModel(
-            'gemini-2.5-flash',  # Working model name
-            generation_config={
-                'temperature': 1.0,      # Maximum creativity for unique recipes
-                'top_p': 0.95,           # Allow diverse outputs
-                'top_k': 60,             # Consider many options
-                'max_output_tokens': 1800,  # Longer for detailed instructions & measurements
-            },
-            safety_settings={
-                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-            }
-        )
-    except Exception as e:
-        print(f"Warning: Could not initialize Gemini API: {e}")
-        model = None
 
 BASE_DIR = os.path.dirname(__file__)
 DB_NAME = os.path.join(BASE_DIR, "foodapp.db")
@@ -105,6 +72,7 @@ def get_expiring_foods(user_id=None, days_threshold=3):
 def make_recipe(food_items, recipe_size="medium", dietary_restrictions="", cuisine_preference=""):
     """
     Generate a recipe using the available food items.
+    Uses fast recipe generation with detailed measurements and instructions.
     """
     if not food_items:
         return "No available food items to create a recipe."
@@ -118,114 +86,11 @@ def make_recipe(food_items, recipe_size="medium", dietary_restrictions="", cuisi
             expiring_soon.append(f"{name} (expires in {days_left} days)")
         food_list.append(name)
     
-    # Try AI generation first
-    if model:
-        try:
-            # Add variety with random cooking styles and approaches
-            import random
-            
-            cooking_methods = [
-                "sautéed", "roasted", "grilled", "pan-fried", "stir-fried",
-                "baked", "steamed", "braised", "simmered", "caramelized"
-            ]
-            
-            flavor_profiles = [
-                "savory umami", "sweet and tangy", "spicy kick", "herb-infused",
-                "garlic-rich", "citrus-bright", "smoky depth", "aromatic"
-            ]
-            
-            dish_types = [
-                "bowl", "skillet", "casserole", "stir-fry", "salad",
-                "wrap", "soup", "pasta", "curry", "medley", "platter"
-            ]
-            
-            cooking_techniques = [
-                "Sauté aromatics, layer flavors, simmer to perfection",
-                "Toss everything in a hot pan, season generously",
-                "Roast until golden, combine while hot",
-                "Cook in stages, build depth of flavor",
-                "Quick sear, then gently steam with lid on",
-                "Marinate briefly, cook hot and fast",
-                "Low and slow cooking method for tender results",
-                "High heat for caramelization, finish with fresh herbs"
-            ]
-            
-            method = random.choice(cooking_methods)
-            flavor = random.choice(flavor_profiles)
-            dish = random.choice(dish_types)
-            technique = random.choice(cooking_techniques)
-            
-            # Sanitize ingredient names to avoid brand names triggering safety filters
-            sanitized_ingredients = []
-            for item in food_list[:8]:
-                # Remove brand names and simplify
-                item_lower = item.lower()
-                if 'cookie' in item_lower:
-                    sanitized_ingredients.append('cookies')
-                elif 'cereal bar' in item_lower or 'granola bar' in item_lower:
-                    sanitized_ingredients.append('cereal bars')
-                elif 'grape' in item_lower:
-                    sanitized_ingredients.append('grapes')
-                elif 'apple' in item_lower:
-                    sanitized_ingredients.append('apple')
-                elif 'banana' in item_lower:
-                    sanitized_ingredients.append('banana')
-                else:
-                    # Generic sanitization - remove parentheses and brand names
-                    clean_item = item.split('(')[0].strip()
-                    # Remove common brand indicators
-                    for brand_word in ['otis', 'spunkmeyer', 'kirkland', 'trader', "joe's", 'whole foods']:
-                        clean_item = clean_item.replace(brand_word, '').replace(brand_word.title(), '').strip()
-                    sanitized_ingredients.append(clean_item if clean_item else item)
-            
-            # Ultra-simplified prompt - avoid words like "recipe" or "cooking" that might trigger filters
-            prompt = f"""How can I combine these foods into a meal: {', '.join(sanitized_ingredients)}?
-
-List:
-1. A meal name
-2. The foods I need with amounts
-3. How to prepare it step by step
-4. How long it takes"""
-
-            print(f"DEBUG: Sending prompt with ingredients: {food_list[:8]}")
-            print(f"DEBUG: Sanitized to: {sanitized_ingredients}")
-            print(f"DEBUG: Full prompt: {prompt[:200]}...")
-            
-            # Fast generation with timeout (increased for detailed response)
-            response = model.generate_content(
-                prompt,
-                request_options={'timeout': 15}  # Increased timeout for detailed recipe
-            )
-            
-            print(f"DEBUG: Got response, checking candidates...")
-            
-            # Check if response was blocked or has content
-            if response.candidates:
-                candidate = response.candidates[0]
-                print(f"Finish reason: {candidate.finish_reason}")
-                
-                # Check for safety ratings
-                if hasattr(candidate, 'safety_ratings'):
-                    print(f"Safety ratings: {candidate.safety_ratings}")
-                
-                # finish_reason 1 = STOP (success), 2 = SAFETY (blocked)
-                if candidate.finish_reason == 1 and candidate.content and candidate.content.parts:
-                    print("SUCCESS: Got valid recipe from AI")
-                    return candidate.content.parts[0].text
-                elif candidate.finish_reason == 2:
-                    print("BLOCKED: Content blocked by safety filters, using fallback")
-                else:
-                    print(f"UNEXPECTED: Unexpected finish reason: {candidate.finish_reason}")
-        except Exception as e:
-            print(f"AI generation failed: {e}")
-            import traceback
-            traceback.print_exc()
-    
-    # Fallback to simple recipe
-    print(f"DEBUG: About to call generate_simple_recipe with {len(food_list)} ingredients")
-    fallback_recipe = generate_simple_recipe(food_list, expiring_soon, recipe_size, dietary_restrictions, cuisine_preference)
-    print(f"DEBUG: Fallback recipe returned, length: {len(fallback_recipe) if fallback_recipe else 0}")
-    return fallback_recipe
+    # Generate recipe using fast template-based generator
+    print(f"DEBUG: Generating recipe with {len(food_list)} ingredients")
+    recipe = generate_simple_recipe(food_list, expiring_soon, recipe_size, dietary_restrictions, cuisine_preference)
+    print(f"DEBUG: Recipe generated, length: {len(recipe) if recipe else 0} characters")
+    return recipe
 
 def generate_simple_recipe(food_list, expiring_soon, recipe_size="medium", dietary_restrictions="", cuisine_preference=""):
     """Generate a detailed recipe with specific measurements and instructions."""
