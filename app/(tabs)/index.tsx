@@ -64,6 +64,28 @@ export default function Index() {
       .catch((error) => console.error("Failed to load ingredients:", error));
   }, []);
 
+  const handleDelete = async (name: string) => {
+    try {
+      await apiCall(
+        `${API_ENDPOINTS.DELETE_INGREDIENT}?name=${encodeURIComponent(name)}`,
+        {
+          method: "DELETE",
+        }
+      );
+      // Remove item from local state
+      setGroups((prevGroups) =>
+        prevGroups
+          .map((group) => ({
+            ...group,
+            items: group.items.filter((item: any) => item.name !== name),
+          }))
+          .filter((group) => group.items.length > 0)
+      );
+    } catch (error) {
+      console.error("Failed to delete ingredient:", error);
+    }
+  };
+
   useEffect(() => {
     loadIngredients();
   }, [loadIngredients]);
@@ -133,7 +155,7 @@ export default function Index() {
                 />
               </View>
             </View>
-            <Slider data={group.items} />
+            <Slider data={group.items} onDelete={handleDelete} />
           </View>
         ))}
       </ScrollView>

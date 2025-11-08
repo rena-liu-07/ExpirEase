@@ -247,15 +247,23 @@ def search_ingredient():
 @app.route('/delete-ingredient', methods=['DELETE'])
 def delete_ingredient():
     """Delete an ingredient by name"""
-    name = request.args.get('name', '')
-    if not name:
-        return jsonify({'error': 'No ingredient name provided'}), 400
-    
     try:
+        print("=== DELETE_INGREDIENT ENDPOINT HIT ===")
+        name = request.args.get('name', '')
+        print(f"Attempting to delete ingredient: {name}")
+        
+        if not name:
+            print("Error: No ingredient name provided")
+            return jsonify({'error': 'No ingredient name provided'}), 400
+        
         from backend.food_data import delete_food
         delete_food(name)
+        print(f"Successfully deleted ingredient: {name}")
         return jsonify({'success': True})
     except Exception as e:
+        print(f"Error in delete_ingredient: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 
