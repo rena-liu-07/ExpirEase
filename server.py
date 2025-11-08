@@ -185,6 +185,8 @@ def all_ingredients():
         from datetime import datetime
         ingredients_tuples = get_user_foods(None)  # Get all ingredients
         
+        print(f"DEBUG: Total ingredients retrieved from database: {len(ingredients_tuples)}")
+        
         # Convert tuples to JSON objects
         ingredients = []
         for name, days_left, category in ingredients_tuples:
@@ -195,6 +197,8 @@ def all_ingredients():
                 'expiration': (datetime.now() + timedelta(days=days_left)).strftime('%Y-%m-%d'),
                 'days_until_expiry': days_left
             })
+        
+        print(f"DEBUG: Returning {len(ingredients)} ingredients to frontend")
         return jsonify(ingredients)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
