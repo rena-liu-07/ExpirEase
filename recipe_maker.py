@@ -1,6 +1,40 @@
 import os
 import sqlite3
+from dotenv import load_dotenv
+import google.generativeai as genai
 from datetime import datetime, timedelta
+
+# Load environment variables from .env file
+load_dotenv()
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+
+# Initialize AI model if API key is available
+model = None
+if GEMINI_API_KEY and GEMINI_API_KEY != 'your_gemini_api_key_here':
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+        from google.generativeai.types import HarmCategory, HarmBlockThreshold
+        
+        # Try gemini-1.5-pro for better recipe generation (different model than scanner)
+        model = genai.GenerativeModel(
+            'gemini-1.5-pro',  # Pro model may have different safety filters
+            generation_config={
+                'temperature': 1.2,      # High creativity for unique recipes
+                'top_p': 0.95,
+                'top_k': 40,
+                'max_output_tokens': 2048,
+            },
+            safety_settings={
+                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+            }
+        )
+        print("Recipe AI model initialized successfully")
+    except Exception as e:
+        print(f"Warning: Could not initialize Gemini API: {e}")
+        model = None
 
 BASE_DIR = os.path.dirname(__file__)
 DB_NAME = os.path.join(BASE_DIR, "foodapp.db")
@@ -72,7 +106,7 @@ def get_expiring_foods(user_id=None, days_threshold=3):
 def make_recipe(food_items, recipe_size="medium", dietary_restrictions="", cuisine_preference=""):
     """
     Generate a recipe using the available food items.
-    Uses fast recipe generation with detailed measurements and instructions.
+    Tries AI first for variety, falls back to template if AI fails.
     """
     if not food_items:
         return "No available food items to create a recipe."
@@ -86,11 +120,75 @@ def make_recipe(food_items, recipe_size="medium", dietary_restrictions="", cuisi
             expiring_soon.append(f"{name} (expires in {days_left} days)")
         food_list.append(name)
     
-    # Generate recipe using fast template-based generator
-    print(f"DEBUG: Generating recipe with {len(food_list)} ingredients")
-    recipe = generate_simple_recipe(food_list, expiring_soon, recipe_size, dietary_restrictions, cuisine_preference)
-    print(f"DEBUG: Recipe generated, length: {len(recipe) if recipe else 0} characters")
-    return recipe
+    # Try AI generation first
+    if model:
+        try:
+            import random
+            
+            # Select up to 8 ingredients
+            ingredients = food_list[:8]
+            
+            # Create a simple, natural prompt that shouldn't trigger filters
+            prompt = f"""Create a delicious {recipe_size} serving meal using these ingredients: {', '.join(ingredients)}.
+
+Format your response exactly like this:
+
+**[Creative Recipe Name]**
+
+**Servings:** {recipe_size.capitalize()} | **Time:** [X] minutes
+
+**Ingredients:**
+- [ingredient 1] - [specific amount]
+- [ingredient 2] - [specific amount]
+(list all with measurements)
+
+**Instructions:**
+1. [First step with timing]
+2. [Second step with timing]
+(detailed steps)
+
+**Chef's Tip:** [One helpful cooking tip]
+
+**Variations:** [2-3 ways to customize]"""
+
+            if dietary_restrictions:
+                prompt += f"\n\nDietary requirements: {dietary_restrictions}"
+            if cuisine_preference:
+                prompt += f"\nCuisine style: {cuisine_preference}"
+            if expiring_soon:
+                prompt += f"\n\nPriority: Use these ingredients first as they're expiring soon: {', '.join(expiring_soon[:3])}"
+            
+            print(f"Attempting AI recipe generation with {len(ingredients)} ingredients...")
+            
+            # Generate with timeout
+            response = model.generate_content(
+                prompt,
+                request_options={'timeout': 20}
+            )
+            
+            # Check response
+            if response and response.candidates and len(response.candidates) > 0:
+                candidate = response.candidates[0]
+                
+                # Check if we got actual content
+                if candidate.finish_reason == 1 and candidate.content and candidate.content.parts:
+                    recipe = candidate.content.parts[0].text
+                    if recipe and len(recipe) > 100:  # Make sure we got a real recipe
+                        print(f"✓ AI recipe generated successfully ({len(recipe)} chars)")
+                        return recipe
+                    else:
+                        print("✗ AI response too short, using fallback")
+                else:
+                    print(f"✗ AI blocked (reason: {candidate.finish_reason}), using fallback")
+            else:
+                print("✗ No AI response, using fallback")
+                
+        except Exception as e:
+            print(f"✗ AI generation error: {e}")
+    
+    # Fallback to template-based generator
+    print(f"Using template recipe generator with {len(food_list)} ingredients")
+    return generate_simple_recipe(food_list, expiring_soon, recipe_size, dietary_restrictions, cuisine_preference)
 
 def generate_simple_recipe(food_list, expiring_soon, recipe_size="medium", dietary_restrictions="", cuisine_preference=""):
     """Generate a detailed recipe with specific measurements and instructions."""
