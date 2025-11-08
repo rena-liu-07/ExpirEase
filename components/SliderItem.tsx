@@ -2,8 +2,8 @@
 import Feather from "@expo/vector-icons/Feather";
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import { Card, Text } from "react-native-paper";
 import { Swipeable } from "react-native-gesture-handler";
+import { Card, Text } from "react-native-paper";
 
 interface SliderItemProps {
   item: any;
