@@ -1,23 +1,25 @@
 import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
-  Alert,
-  Animated,
-  Easing,
-  Image,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    Animated,
+    Easing,
+    Image,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { API_ENDPOINTS, apiCall } from "../../config/api";
 import { useAuth } from "../../lib/auth-context";
 
 export default function NewIngredientScreen() {
   const { user } = useAuth();
+  const router = useRouter();
   const [ingredientAdded, setIngredientAdded] = useState(false);
   const [mode, setMode] = useState("manual");
   const anim = useRef(new Animated.Value(0)).current;
@@ -92,46 +94,76 @@ export default function NewIngredientScreen() {
 
   const handlePhotoSubmission = async (photoArray = photos, files?: File[]) => {
     try {
+      Alert.alert("Debug", `Starting scan...\nPlatform: ${Platform.OS}\nPhotos: ${photoArray.length}\nFiles: ${files?.length || 0}\nWebFiles: ${webFiles.length}`);
+      
       console.log("handlePhotoSubmission called");
       console.log("Platform.OS:", Platform.OS);
       console.log("files:", files);
       console.log("webFiles.length:", webFiles.length);
       console.log("photos.length:", photoArray.length);
 
+      let formData = new FormData();
+      let hasImages = false;
+
       if (Platform.OS === "web" && files && files.length > 0) {
-        // For web, use actual File objects
-        const formData = new FormData();
+        // For web with passed files
         files.forEach((file) => {
           formData.append("images", file);
         });
-        const response = await fetch("http://localhost:5000/photo_scanner", {
-          method: "POST",
-          body: formData as any,
-        });
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const data = await response.json();
-        console.log("Scanner response:", data);
-        Alert.alert("Success", "Photo processed successfully!");
+        hasImages = true;
       } else if (Platform.OS === "web" && webFiles.length > 0) {
-        // Use stored web files
-        const formData = new FormData();
+        // For web with stored webFiles
         webFiles.forEach((file) => {
           formData.append("images", file);
         });
-        const response = await fetch("http://localhost:5000/photo_scanner", {
-          method: "POST",
-          body: formData as any,
+        hasImages = true;
+      } else if (Platform.OS !== "web" && photoArray.length > 0) {
+        // For mobile platforms (iOS/Android)
+        photoArray.forEach((uri, index) => {
+          const filename = uri.split('/').pop() || `photo_${index}.jpg`;
+          formData.append("images", {
+            uri: uri,
+            type: 'image/jpeg',
+            name: filename,
+          } as any);
         });
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const data = await response.json();
-        console.log("Scanner response:", data);
-        Alert.alert("Success", "Photo processed successfully!");
+        hasImages = true;
+      }
+
+      if (!hasImages) {
+        Alert.alert("Error", "No images to upload. Please select photos first.");
+        return;
+      }
+
+      console.log("Sending request to:", API_ENDPOINTS.PHOTO_SCANNER);
+      const response = await fetch(API_ENDPOINTS.PHOTO_SCANNER, {
+        method: "POST",
+        body: formData as any,
+        // Don't set Content-Type header - let fetch set it with boundary
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Network response was not ok: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log("Scanner response:", data);
+
+      if (data.success && data.results && data.results.length > 0) {
+        const items = data.results[0];
+        const itemNames = items.map((item: any) => item.item).join(', ');
+        Alert.alert(
+          "Scan Complete!", 
+          `Found ${items.length} items: ${itemNames}\n\nThese have been added to your expiring food list.`,
+          [{ text: 'OK', onPress: () => {
+            setPhotos([]);
+            setWebFiles([]);
+            router.push('/(tabs)');  // Navigate back to home
+          }}]
+        );
       } else {
-        Alert.alert("Error", "No images to upload");
+        Alert.alert("Scan Complete", "No items found in the image.");
       }
     } catch (error) {
       console.error("Error:", error);
@@ -160,22 +192,34 @@ export default function NewIngredientScreen() {
     category: string;
     expiration: string;
   }) => {
-    if (!user?.id) {
-      console.error("User not logged in");
+    console.log("handleAddIngredient called with:", newIngredient);
+    console.log("User context:", user);
+    
+    if (!newIngredient.name || !newIngredient.expiration) {
+      Alert.alert("Error", "Please fill in ingredient name and expiration date.");
       return;
     }
 
     try {
+      console.log("Calling API endpoint:", API_ENDPOINTS.ADD_INGREDIENT);
       const addedIngredient = await apiCall(API_ENDPOINTS.ADD_INGREDIENT, {
         method: "POST",
         body: JSON.stringify({
           name: newIngredient.name,
-          category: newIngredient.category,
+          category: newIngredient.category || "Other",
           expiration_date: newIngredient.expiration,
         }),
       });
+      console.log("API response:", addedIngredient);
+      
+      Alert.alert(
+        "Success!", 
+        `${newIngredient.name} has been added to your ingredients.`,
+        [{ text: 'OK', onPress: () => router.push('/(tabs)') }]
+      );
     } catch (error) {
       console.error("Failed to add ingredient:", error);
+      Alert.alert("Error", `Failed to add ingredient: ${error}`);
     }
   };
 

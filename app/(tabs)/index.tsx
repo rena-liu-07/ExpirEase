@@ -1,8 +1,9 @@
 import Slider from "@/components/Slider";
 import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Button, Text } from "react-native-paper";
 import { API_ENDPOINTS, apiCall } from "../../config/api";
@@ -48,11 +49,31 @@ export default function Index() {
   const [search, setSearch] = useState("");
   const [groups, setGroups] = useState<any[]>([]);
 
-  useEffect(() => {
+  const loadIngredients = useCallback(() => {
+    console.log("Loading ingredients from API...");
     apiCall(API_ENDPOINTS.ALL_INGREDIENTS)
-      .then((data) => setGroups(groupIngredients(data as any[])))
+      .then((data) => {
+        console.log(`Received ${data.length} ingredients from API`);
+        const grouped = groupIngredients(data as any[]);
+        console.log(`Grouped into ${grouped.length} expiry groups`);
+        grouped.forEach(g => {
+          console.log(`  ${g.label}: ${g.items.length} items`);
+        });
+        setGroups(grouped);
+      })
       .catch((error) => console.error("Failed to load ingredients:", error));
   }, []);
+
+  useEffect(() => {
+    loadIngredients();
+  }, [loadIngredients]);
+
+  // Reload ingredients when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadIngredients();
+    }, [loadIngredients])
+  );
 
   return (
     <View style={[styles.container, { flex: 1, minHeight: 0 }]}>

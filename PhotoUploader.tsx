@@ -5,6 +5,8 @@ import * as React from 'react';
 import { useState } from 'react';
 // Import UI components and utilities from React Native
 import { Alert, Button, Image, ScrollView, StyleSheet, View } from 'react-native';
+// Import API configuration
+import { API_ENDPOINTS } from './config/api';
 
 // Main component definition
 export default function PhotoUploader() {
@@ -86,17 +88,32 @@ export default function PhotoUploader() {
         name: photoUri.split('/').pop() || 'photo.jpg',
       } as any); // React Native FormData workaround
 
-      const response = await fetch('http://10.36.184.181:5000/photo_scanner', {
+      console.log('Sending photo to:', API_ENDPOINTS.PHOTO_SCANNER);
+      const response = await fetch(API_ENDPOINTS.PHOTO_SCANNER, {
         method: 'POST',
         body: formData,
         // Do NOT set Content-Type header!
       });
+      
       if (!response.ok) {
         const text = await response.text();
         throw new Error('Network response was not ok: ' + text);
       }
+      
       const data = await response.json();
-      Alert.alert('Scan Complete', JSON.stringify(data));
+      console.log('Response from server:', data);
+      
+      if (data.success && data.results && data.results.length > 0) {
+        const items = data.results[0]; // Get first image results
+        const itemNames = items.map((item: any) => item.item).join(', ');
+        Alert.alert(
+          '✅ Scan Complete!', 
+          `Found ${items.length} items: ${itemNames}\n\nThese have been added to your expiring food list.`,
+          [{ text: 'OK', onPress: () => setPhotos([]) }] // Clear photos after success
+        );
+      } else {
+        Alert.alert('Scan Complete', 'No items found in the image.');
+      }
     } catch (error) {
       console.error('Error sending photo:', error);
       Alert.alert('Error', String((error as any)?.message || error));

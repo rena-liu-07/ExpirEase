@@ -3,6 +3,15 @@ from flask_cors import CORS
 from datetime import datetime, timedelta
 import sqlite3
 import os
+import sys
+
+# Add backend directory to Python path for imports
+backend_path = os.path.join(os.path.dirname(__file__), 'backend')
+if backend_path not in sys.path:
+    sys.path.insert(0, backend_path)
+
+# Import backend modules
+from backend import scanner, food_data
 
 app = Flask(__name__)
 CORS(app)
@@ -82,6 +91,72 @@ def login():
 @app.route("/logout", methods=["POST"])
 def logout():
     return jsonify({"message": "Logged out"}), 200
+
+@app.route("/photo_scanner", methods=['POST'])
+def photo_scanner():
+    """Photo scanning endpoint for food recognition"""
+    print("=== PHOTO_SCANNER ENDPOINT HIT ===")
+    print(f"Request method: {request.method}")
+    print(f"Request files: {list(request.files.keys())}")
+    
+    try:
+        # Check for 'image' (singular) or 'images' (plural)
+        image_files = []
+        if 'image' in request.files:
+            image_files = [request.files['image']]
+        elif 'images' in request.files:
+            image_files = request.files.getlist('images')
+        else:
+            print("No image/images field found in request")
+            return jsonify({'error': 'No images uploaded', 'received_keys': list(request.files.keys())}), 400
+        
+        print(f"Found {len(image_files)} image files")
+        
+        # Process each image
+        results = []
+        for i, image_file in enumerate(image_files):
+            print(f"Processing image {i+1}: {image_file.filename}")
+            try:
+                # Save the uploaded file temporarily
+                temp_path = f"temp_upload_{i}.jpg"
+                image_file.save(temp_path)
+                
+                # Analyze the image and add to database
+                items = scanner.analyze_image(temp_path)
+                results.append(items)
+                
+                # Clean up temp file
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
+                    
+            except Exception as e:
+                print(f"Error processing image {i+1}: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                results.append([{'item': 'Error', 'error': str(e)}])
+        
+        print("Analysis complete, returning results")
+        return jsonify({"results": results, "success": True}), 200
+        
+    except Exception as e:
+        print(f"Error in photo_scanner: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e), 'success': False}), 500
+
+@app.route('/')
+def home():
+    """Root endpoint to verify server is running"""
+    return jsonify({
+        "message": "ExpirEase API Server is running!",
+        "endpoints": {
+            "auth": ["/signup", "/login", "/logout"],
+            "recipes": ["/generate-recipe"],
+            "ingredients": ["/all-ingredients", "/expiring-ingredients", "/add_ingredient", "/delete-ingredient"],
+            "search": ["/search?q=<query>"],
+            "photo": ["/photo_scanner (POST)"]
+        }
+    }), 200
 
 @app.route('/generate-recipe', methods=['POST'])
 def generate_recipe_endpoint():
@@ -189,12 +264,17 @@ def delete_ingredient():
 @app.route('/add_ingredient', methods=['POST'])
 def add_ingredient():
     try:
+        print("=== ADD_INGREDIENT ENDPOINT HIT ===")
         from backend.food_data import add_food
         
         data = request.get_json()
+        print(f"Received data: {data}")
+        
         name = data.get('name')
         category = data.get('category')
         expiration_date = data.get('expiration_date')
+        
+        print(f"Name: {name}, Category: {category}, Expiration: {expiration_date}")
         
         today = datetime.now()
         expire_days = None
@@ -205,9 +285,16 @@ def add_ingredient():
                 expire_days = 0
         else:
             expire_days = 7
+        
+        print(f"Calculated expire_days: {expire_days}")
         add_food(name, expire_days, category)
+        print(f"Successfully added {name} to database")
+        
         return jsonify({'success': True}), 200
     except Exception as e:
+        print(f"Error in add_ingredient: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 400
 
 if __name__ == '__main__':

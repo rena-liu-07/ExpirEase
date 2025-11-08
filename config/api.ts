@@ -29,8 +29,9 @@ export const API_ENDPOINTS = {
   GENERATE_RECIPE: `${API_BASE_URL}/generate-recipe`,
   ALL_INGREDIENTS: `${API_BASE_URL}/all-ingredients`,
   SEARCH: `${API_BASE_URL}/search`,
-  ADD_INGREDIENT: `${API_BASE_URL}/add-ingredient`,
+  ADD_INGREDIENT: `${API_BASE_URL}/add_ingredient`,
   DELETE_INGREDIENT: `${API_BASE_URL}/delete-ingredient`,
+  PHOTO_SCANNER: `${API_BASE_URL}/photo_scanner`,
 } as const;
 
 // Utility function for making API calls with error handling

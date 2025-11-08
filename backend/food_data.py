@@ -2,7 +2,8 @@ import sqlite3
 from datetime import datetime, timedelta
 import os
 
-BASE_DIR = os.path.dirname(__file__)
+# Use the root foodapp.db, not backend/foodapp.db
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # Go up one level to project root
 DB_NAME = os.path.join(BASE_DIR, "foodapp.db")
 
 conn = sqlite3.connect(DB_NAME)
@@ -60,10 +61,6 @@ def add_to_catalog(name, default_expire_days):
     conn.close()
 
 def add_food(name, expire_days, category):
-    # Create a new connection for this thread to avoid threading issues
-    local_conn = sqlite3.connect(DB_NAME)
-    local_cursor = local_conn.cursor()
-    
     today = datetime.now().strftime("%Y-%m-%d")
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
