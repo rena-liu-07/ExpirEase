@@ -9,7 +9,9 @@ CORS(app)
 
 # --- Database paths ---
 USER_DB = "users.db"
-FOOD_DB = os.path.abspath(os.path.join(os.path.dirname(__file__), "foodapp.db"))
+# Use the same database as food_data.py (root foodapp.db)
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # Go up to project root
+FOOD_DB = os.path.join(BASE_DIR, "foodapp.db")
 
 # --- Init user database ---
 def init_user_db():
@@ -119,20 +121,36 @@ def search():
 
 @app.route("/all-ingredients", methods=["GET"])
 def all_ingredients():
+    print("DEBUG: /all-ingredients endpoint called")
     conn = sqlite3.connect(FOOD_DB)
     cursor = conn.cursor()
     cursor.execute("SELECT name, category, date_added, expire_days FROM food")
     rows = cursor.fetchall()
+    print(f"DEBUG: Retrieved {len(rows)} rows from database")
     conn.close()
+    
     result = []
+    today = datetime.now().date()
+    
     for name, category, date_added, expire_days in rows:
-        date_added_dt = datetime.strptime(date_added, "%Y-%m-%d")
-        expire_date = date_added_dt + timedelta(days=expire_days)
-        result.append({
-            "name": name,
-            "category": category,
-            "expiration": expire_date.strftime("%Y-%m-%d")
-        })
+        try:
+            date_added_dt = datetime.strptime(date_added, "%Y-%m-%d")
+            expire_date = date_added_dt + timedelta(days=expire_days)
+            days_left = (expire_date.date() - today).days
+            
+            # Only include foods that haven't expired
+            if days_left >= 0:
+                result.append({
+                    "name": name,
+                    "category": category,
+                    "expiration": expire_date.strftime("%Y-%m-%d"),
+                    "days_until_expiry": days_left
+                })
+        except Exception as e:
+            print(f"DEBUG: Error processing {name}: {e}")
+            continue
+    
+    print(f"DEBUG: Returning {len(result)} non-expired ingredients")
     return jsonify(result)
 
 
@@ -224,6 +242,74 @@ def generate_recipe():
     except Exception as e:
         return jsonify({'error': str(e), 'success': False}), 500
 
+@app.route("/photo_scanner", methods=["POST"])
+def photo_scanner():
+    """Scan photos to identify and add food items to database."""
+    try:
+        import sys
+        import os
+        import tempfile
+        sys.path.append(os.path.dirname(__file__))
+        from scanner import analyze_image
+        
+        # Check if request has files or JSON
+        if request.files:
+            # Handle file upload (from mobile app)
+            all_detected_items = []
+            
+            for file_key in request.files:
+                file = request.files[file_key]
+                if file:
+                    # Save to temporary file
+                    with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_file:
+                        file.save(temp_file.name)
+                        temp_path = temp_file.name
+                    
+                    try:
+                        # Analyze the image
+                        detected_items = analyze_image(temp_path)
+                        all_detected_items.extend(detected_items)
+                    finally:
+                        # Clean up temp file
+                        if os.path.exists(temp_path):
+                            os.remove(temp_path)
+            
+            return jsonify({
+                'results': [all_detected_items],  # Wrap in array for compatibility
+                'detected_items': all_detected_items,
+                'success': True,
+                'count': len(all_detected_items)
+            })
+        else:
+            # Handle JSON with paths (for testing)
+            data = request.get_json() or {}
+            paths = data.get('paths', [])
+            
+            if not paths:
+                return jsonify({'error': 'No image paths or files provided', 'success': False}), 400
+            
+            all_detected_items = []
+            
+            for image_path in paths:
+                # Check if file exists
+                if not os.path.exists(image_path):
+                    continue
+                    
+                # Analyze the image
+                detected_items = analyze_image(image_path)
+                all_detected_items.extend(detected_items)
+            
+            return jsonify({
+                'detected_items': all_detected_items,
+                'success': True,
+                'count': len(all_detected_items)
+            })
+    except Exception as e:
+        print(f"Photo scanner error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e), 'success': False}), 500
+
 @app.route("/expiring-ingredients", methods=["GET"])
 def expiring_ingredients():
     """Get ingredients that are expiring soon."""
@@ -260,5 +346,5 @@ def home():
     return "✅ Unified Flask API running! Available: /signup, /login, /logout, /search, /all-ingredients"
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5000, use_reloader=False)
 
